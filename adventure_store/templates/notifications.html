@@ -29,13 +29,13 @@
                         
                         {% if notification.related_id and notification.type == 'approval' %}
                             <div class="mt-2">
-                                <a href="{{ url_for('adventure_detail', adventure_id=notification.related_id) }}" class="btn-3d btn-sm">
+                                <a href="{{ url_for('main.adventure_detail', adventure_id=notification.related_id) }}" class="btn-3d btn-sm">
                                     View Adventure
                                 </a>
                             </div>
                         {% elif notification.type == 'moderation' and session.role in ['admin', 'moderator'] %}
                             <div class="mt-2">
-                                <a href="{{ url_for('moderate') }}" class="btn-3d btn-sm">
+                                <a href="{{ url_for('moderate.moderate_list') }}" class="btn-3d btn-sm">
                                     Go to Moderation Panel
                                 </a>
                             </div>

@@ -49,7 +49,7 @@
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
                                     {% if adventure.approved %}
-                                        <a href="{{ url_for('adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
+                                        <a href="{{ url_for('main.adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
                                     {% else %}
                                         <button class="btn-3d btn-sm" disabled>Pending Review</button>
                                     {% endif %}
@@ -62,12 +62,12 @@
         {% else %}
             <div class="alert alert-info">
                 <p>You haven't uploaded any adventures yet.</p>
-                <a href="{{ url_for('upload_adventure') }}" class="btn-3d mt-3">Upload Your First Adventure</a>
+                <a href="{{ url_for('user.upload_adventure') }}" class="btn-3d mt-3">Upload Your First Adventure</a>
             </div>
         {% endif %}
         
         <div class="mt-4">
-            <a href="{{ url_for('upload_adventure') }}" class="btn-3d">
+            <a href="{{ url_for('user.upload_adventure') }}" class="btn-3d">
                 <i class="fas fa-upload me-2"></i>Upload New Adventure
             </a>
         </div>

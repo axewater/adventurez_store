@@ -42,11 +42,11 @@
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
-                                        <form action="{{ url_for('moderate_adventure', adventure_id=adventure.id) }}" method="post">
+                                        <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post">
                                             <input type="hidden" name="action" value="approve">
                                             <button type="submit" class="btn-3d btn-success btn-sm">Approve</button>
                                         </form>
-                                        <form action="{{ url_for('moderate_adventure', adventure_id=adventure.id) }}" method="post">
+                                        <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post">
                                             <input type="hidden" name="action" value="reject">
                                             <button type="submit" class="btn-3d btn-danger btn-sm">Reject</button>
                                         </form>

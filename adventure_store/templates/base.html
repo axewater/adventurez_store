@@ -17,7 +17,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">
+            <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 <i class="fas fa-book-open me-2"></i>Text Adventure Builder
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -26,21 +26,21 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">Home</a>
+                        <a class="nav-link" href="{{ url_for('main.index') }}">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('adventures') }}">Adventures</a>
+                        <a class="nav-link" href="{{ url_for('main.adventures') }}">Adventures</a>
                     </li>
                     {% if session.user_id %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('upload_adventure') }}">Upload</a>
+                            <a class="nav-link" href="{{ url_for('user.upload_adventure') }}">Upload</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('my_adventures') }}">My Adventures</a>
+                            <a class="nav-link" href="{{ url_for('user.my_adventures') }}">My Adventures</a>
                         </li>
                         {% if session.role in ['admin', 'moderator'] %}
                             <li class="nav-item">
-                                <a class="nav-link position-relative" href="{{ url_for('moderate') }}">
+                                <a class="nav-link position-relative" href="{{ url_for('moderate.moderate_list') }}">
                                     Moderate
                                     {% if pending_moderation_count > 0 %}
                                         <span class="notification-badge">{{ pending_moderation_count }}</span>
@@ -50,23 +50,23 @@
                         {% endif %}
                         {% if session.role == 'admin' %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ url_for('admin_panel') }}">Admin</a>
+                                <a class="nav-link" href="{{ url_for('admin.admin_panel') }}">Admin</a>
                             </li>
                         {% endif %}
                         <li class="nav-item">
-                            <a class="nav-link position-relative" href="{{ url_for('notifications') }}">
+                            <a class="nav-link position-relative" href="{{ url_for('user.notifications') }}">
                                 <i class="fas fa-bell"></i>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn-3d" href="{{ url_for('logout') }}">Logout</a>
+                            <a class="btn-3d" href="{{ url_for('auth.logout') }}">Logout</a>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+                            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn-3d" href="{{ url_for('register') }}">Register</a>
+                            <a class="btn-3d" href="{{ url_for('auth.register') }}">Register</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -99,12 +99,12 @@
                     <p>Explore and share text adventures</p>
                 </div>
                 <div class="footer-links">
-                    <a href="{{ url_for('index') }}">Home</a>
-                    <a href="{{ url_for('adventures') }}">Adventures</a>
+                    <a href="{{ url_for('main.index') }}">Home</a>
+                    <a href="{{ url_for('main.adventures') }}">Adventures</a>
                     {% if session.user_id %}
-                        <a href="{{ url_for('upload_adventure') }}">Upload</a>
+                        <a href="{{ url_for('user.upload_adventure') }}">Upload</a>
                     {% else %}
-                        <a href="{{ url_for('register') }}">Register</a>
+                        <a href="{{ url_for('auth.register') }}">Register</a>
                     {% endif %}
                 </div>
             </div>

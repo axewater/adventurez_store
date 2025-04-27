@@ -46,19 +46,19 @@
             <div class="glass-panel">
                 <h5 class="mb-3">Admin Menu</h5>
                 <ul class="list-group">
-                    <a href="{{ url_for('admin_panel') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                     </a>
-                    <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action active">
+                    <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action active">
                         <i class="fas fa-users me-2"></i>User Management
                     </a>
-                    <a href="{{ url_for('admin_stats') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-chart-bar me-2"></i>Statistics
                     </a>
-                    <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_settings') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-cog me-2"></i>Settings
                     </a>
-                    <a href="{{ url_for('moderate') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('moderate.moderate_list') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-tasks me-2"></i>Moderation
                         {% if pending_moderation_count > 0 %}
                             <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
@@ -81,7 +81,7 @@
                 <!-- Search and Filter -->
                 <div class="row mb-4">
                     <div class="col-md-8">
-                        <form action="{{ url_for('admin_users') }}" method="get" class="d-flex">
+                        <form action="{{ url_for('admin.admin_users') }}" method="get" class="d-flex">
                             <input type="text" name="search" class="form-control me-2" placeholder="Search users...">
                             <button type="submit" class="btn-3d">Search</button>
                         </form>
@@ -89,10 +89,10 @@
                     <div class="col-md-4">
                         <div class="d-flex justify-content-end">
                             <select class="form-select" id="role-filter" onchange="window.location = this.value;">
-                                <option value="{{ url_for('admin_users') }}">All Roles</option>
-                                <option value="{{ url_for('admin_users', role='admin') }}">Admins</option>
-                                <option value="{{ url_for('admin_users', role='moderator') }}">Moderators</option>
-                                <option value="{{ url_for('admin_users', role='user') }}">Users</option>
+                                <option value="{{ url_for('admin.admin_users') }}">All Roles</option>
+                                <option value="{{ url_for('admin.admin_users', role='admin') }}">Admins</option>
+                                <option value="{{ url_for('admin.admin_users', role='moderator') }}">Moderators</option>
+                                <option value="{{ url_for('admin.admin_users', role='user') }}">Users</option>
                             </select>
                         </div>
                     </div>
@@ -137,7 +137,7 @@
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                     </div>
                                                     <div class="modal-body">
-                                                        <form action="{{ url_for('admin_update_user', user_id=user.id) }}" method="post">
+                                                        <form action="{{ url_for('admin.admin_update_user', user_id=user.id) }}" method="post">
                                                             <div class="mb-3">
                                                                 <label for="role{{ user.id }}" class="form-label">Role</label>
                                                                 <select class="form-select" id="role{{ user.id }}" name="role">
@@ -171,7 +171,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{ url_for('admin_add_user') }}" method="post">
+                    <form action="{{ url_for('admin.admin_add_user') }}" method="post">
                         <div class="mb-3">
                             <label for="add-username" class="form-label">Username</label>
                             <input type="text" class="form-control" id="add-username" name="username" required>

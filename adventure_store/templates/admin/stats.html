@@ -52,19 +52,19 @@
             <div class="glass-panel">
                 <h5 class="mb-3">Admin Menu</h5>
                 <ul class="list-group">
-                    <a href="{{ url_for('admin_panel') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                     </a>
-                    <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-users me-2"></i>User Management
                     </a>
-                    <a href="{{ url_for('admin_stats') }}" class="list-group-item list-group-item-action active">
+                    <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action active">
                         <i class="fas fa-chart-bar me-2"></i>Statistics
                     </a>
-                    <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('admin.admin_settings') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-cog me-2"></i>Settings
                     </a>
-                    <a href="{{ url_for('moderate') }}" class="list-group-item list-group-item-action">
+                    <a href="{{ url_for('moderate.moderate_list') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-tasks me-2"></i>Moderation
                         {% if pending_moderation_count > 0 %}
                             <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
