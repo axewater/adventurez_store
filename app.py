@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, send_from_directory
+from datetime import datetime
 import sqlite3
-import os
+import os, datetime
 import hashlib
 import datetime
 import zipfile
@@ -26,6 +27,22 @@ def get_db_connection():
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
+
+# Helper function to parse datetime strings from SQLite
+def parse_datetime(date_string):
+    """Safely parse a datetime string from SQLite."""
+    if not date_string:
+        return None
+    try:
+        # Try parsing with microseconds first (often added by Python's datetime.now())
+        return datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
+    except ValueError:
+        try:
+            # Fallback to parsing without microseconds (default SQLite format)
+            return datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S')
+        except (ValueError, TypeError):
+            app.logger.warning(f"Could not parse date string: {date_string}. Returning as is.")
+            return date_string # Return original string if parsing fails completely
 
 # Authentication decorators
 def login_required(f):
@@ -148,6 +165,13 @@ def index():
         LIMIT 6
     ''').fetchall()
     
+    # Convert date strings to datetime objects
+    processed_featured = []
+    for adv in featured:
+        adv_dict = dict(adv)
+        adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+        processed_featured.append(adv_dict)
+        
     # Get recent adventures
     recent = conn.execute('''
         SELECT a.id, a.name, a.description, u.username as author, a.creation_date
@@ -158,6 +182,11 @@ def index():
         LIMIT 6
     ''').fetchall()
     
+    # Convert date strings to datetime objects
+    processed_recent = [dict(adv) for adv in recent] # Convert Row to dict first
+    for adv in processed_recent:
+        adv['creation_date'] = parse_datetime(adv['creation_date'])
+        
     # Get popular tags
     tags = conn.execute('''
         SELECT t.id, t.name, COUNT(at.adventure_id) as adventure_count
@@ -172,7 +201,7 @@ def index():
     
     conn.close()
     
-    return render_template('index.html', featured=featured, recent=recent, tags=tags)
+    return render_template('index.html', featured=processed_featured, recent=processed_recent, tags=tags)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -342,12 +371,19 @@ def adventures():
     
     adventures = conn.execute(query, params).fetchall()
     
+    # Convert date strings to datetime objects
+    processed_adventures = []
+    for adv in adventures:
+        adv_dict = dict(adv)
+        adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+        processed_adventures.append(adv_dict)
+        
     # Get all tags for filtering
     tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
     
     conn.close()
     
-    return render_template('adventures.html', adventures=adventures, tags=tags, 
+    return render_template('adventures.html', adventures=processed_adventures, tags=tags, 
                           current_tag=tag_id, search=search, sort=sort)
 
 @app.route('/adventure/<int:adventure_id>')
@@ -373,6 +409,10 @@ def adventure_detail(adventure_id):
         flash('Adventure not found', 'error')
         return redirect(url_for('adventures'))
     
+    # Convert adventure Row to dict and parse date
+    adventure_dict = dict(adventure)
+    adventure_dict['creation_date'] = parse_datetime(adventure_dict['creation_date'])
+    
     # Get tags for this adventure
     tags = conn.execute('''
         SELECT t.id, t.name
@@ -390,6 +430,12 @@ def adventure_detail(adventure_id):
         ORDER BY r.created_at DESC
     ''', (adventure_id,)).fetchall()
     
+    # Convert reviews Rows to dicts and parse dates
+    processed_reviews = []
+    for review in reviews:
+        review_dict = dict(review)
+        review_dict['created_at'] = parse_datetime(review_dict['created_at'])
+        processed_reviews.append(review_dict)
     # Check if current user has rated this adventure
     user_rating = None
     if 'user_id' in session:
@@ -403,8 +449,8 @@ def adventure_detail(adventure_id):
     
     conn.close()
     
-    return render_template('adventure_detail.html', adventure=adventure, tags=tags, 
-                          reviews=reviews, user_rating=user_rating)
+    return render_template('adventure_detail.html', adventure=adventure_dict, tags=tags, 
+                          reviews=processed_reviews, user_rating=user_rating)
 
 @app.route('/download/<int:adventure_id>')
 @login_required
@@ -633,9 +679,16 @@ def my_adventures():
         ORDER BY a.creation_date DESC
     ''', (session['user_id'],)).fetchall()
     
+    # Convert date strings to datetime objects
+    processed_adventures = []
+    for adv in adventures:
+        adv_dict = dict(adv)
+        adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+        processed_adventures.append(adv_dict)
+        
     conn.close()
     
-    return render_template('my_adventures.html', adventures=adventures)
+    return render_template('my_adventures.html', adventures=processed_adventures)
 
 @app.route('/moderate')
 @moderator_required
@@ -643,7 +696,7 @@ def moderate():
     conn = get_db_connection()
     
     # Get pending adventures
-    pending = conn.execute('''
+    pending = conn.execute(''' 
         SELECT a.id, a.name, a.description, u.username as author, a.creation_date,
                a.file_size, a.version_compat
         FROM adventures a
@@ -652,18 +705,26 @@ def moderate():
         ORDER BY a.creation_date ASC
     ''').fetchall()
     
+    # Convert Rows to dicts and parse dates
+    processed_pending = []
+    for adventure in pending:
+        adv_dict = dict(adventure)
+        adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+        processed_pending.append(adv_dict)
+    
     # Mark notifications as read
     if 'user_id' in session:
-        conn.execute('''
-            UPDATE notifications
-            SET is_read = 1
+        conn.execute(''' 
+            UPDATE notifications 
+            SET is_read = 1 
             WHERE user_id = ? AND type = 'moderation'
         ''', (session['user_id'],))
         conn.commit()
     
     conn.close()
     
-    return render_template('moderate.html', pending=pending)
+    return render_template('moderate.html', pending=processed_pending)
+
 
 @app.route('/moderate/<int:adventure_id>', methods=['POST'])
 @moderator_required
@@ -754,13 +815,8 @@ def admin_users():
     processed_users = []
     for user_row in users:
         user_dict = dict(user_row) # Convert Row object to dictionary
-        try:
-            user_dict['created_at'] = datetime.datetime.strptime(user_dict['created_at'], '%Y-%m-%d %H:%M:%S')
-            if user_dict['last_login']:
-                user_dict['last_login'] = datetime.datetime.strptime(user_dict['last_login'], '%Y-%m-%d %H:%M:%S.%f') # Handle potential microseconds from user login update
-        except (ValueError, TypeError) as e:
-            app.logger.error(f"Error parsing timestamp for user {user_dict.get('id')}: {e}")
-            # Keep original values or set to None if parsing fails
+        user_dict['created_at'] = parse_datetime(user_dict['created_at'])
+        user_dict['last_login'] = parse_datetime(user_dict['last_login'])
         processed_users.append(user_dict)
     
     conn.close()
@@ -1012,6 +1068,13 @@ def notifications():
         ORDER BY created_at DESC
     ''', (session['user_id'],)).fetchall()
     
+    # Convert Rows to dicts and parse dates
+    processed_notifications = []
+    for notif in notifications:
+        notif_dict = dict(notif)
+        notif_dict['created_at'] = parse_datetime(notif_dict['created_at'])
+        processed_notifications.append(notif_dict)
+    
     # Mark all as read
     conn.execute('''
         UPDATE notifications
@@ -1022,7 +1085,7 @@ def notifications():
     conn.commit()
     conn.close()
     
-    return render_template('notifications.html', notifications=notifications)
+    return render_template('notifications.html', notifications=processed_notifications)
 
 # Error handlers
 @app.errorhandler(404)
