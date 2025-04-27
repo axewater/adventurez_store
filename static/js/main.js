@@ -120,28 +120,6 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeCharts();
     }
 
-    // Add 3D effect to cards
-    const cards = document.querySelectorAll('.glass-panel');
-    cards.forEach(card => {
-        card.addEventListener('mousemove', function(e) {
-            const rect = this.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            
-            const angleX = (y - centerY) / 20;
-            const angleY = (centerX - x) / 20;
-            
-            this.style.transform = `perspective(1000px) rotateX(${angleX}deg) rotateY(${angleY}deg) translateZ(10px)`;
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
-        });
-    });
-
     // Alert auto-close
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {

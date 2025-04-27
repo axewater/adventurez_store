@@ -750,9 +750,22 @@ def admin_users():
         ORDER BY created_at DESC
     ''').fetchall()
     
+    # Convert timestamp strings to datetime objects
+    processed_users = []
+    for user_row in users:
+        user_dict = dict(user_row) # Convert Row object to dictionary
+        try:
+            user_dict['created_at'] = datetime.datetime.strptime(user_dict['created_at'], '%Y-%m-%d %H:%M:%S')
+            if user_dict['last_login']:
+                user_dict['last_login'] = datetime.datetime.strptime(user_dict['last_login'], '%Y-%m-%d %H:%M:%S.%f') # Handle potential microseconds from user login update
+        except (ValueError, TypeError) as e:
+            app.logger.error(f"Error parsing timestamp for user {user_dict.get('id')}: {e}")
+            # Keep original values or set to None if parsing fails
+        processed_users.append(user_dict)
+    
     conn.close()
     
-    return render_template('admin/users.html', users=users)
+    return render_template('admin/users.html', users=processed_users)
 
 @app.route('/admin/user/<int:user_id>', methods=['POST'])
 @admin_required
