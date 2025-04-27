@@ -9,9 +9,12 @@ def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 def parse_datetime(date_string):
-    """Safely parse a datetime string from SQLite."""
+    """Safely parse a datetime string or return a datetime object if already parsed."""
     if not date_string:
         return None
+    # If it's already a datetime object, return it directly
+    if isinstance(date_string, datetime.datetime):
+        return date_string
     try:
         # Try parsing with microseconds first
         return datetime.datetime.strptime(date_string, '%Y-%m-%d %H:%M:%S.%f')
