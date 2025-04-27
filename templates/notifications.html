@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <h1 class="mb-4">Your Notifications</h1>
+        
+        {% if notifications %}
+            <div class="list-group">
+                {% for notification in notifications %}
+                    <div class="glass-panel mb-3 {% if not notification.is_read %}border-start border-4 border-primary{% endif %}">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h5 class="mb-0">
+                                {% if notification.type == 'moderation' %}
+                                    <i class="fas fa-exclamation-circle text-warning me-2"></i>
+                                {% elif notification.type == 'approval' %}
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                {% elif notification.type == 'rejection' %}
+                                    <i class="fas fa-times-circle text-danger me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-bell me-2"></i>
+                                {% endif %}
+                                {{ notification.content }}
+                            </h5>
+                            <small class="text-muted">{{ notification.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                        </div>
+                        
+                        {% if notification.related_id and notification.type == 'approval' %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('adventure_detail', adventure_id=notification.related_id) }}" class="btn-3d btn-sm">
+                                    View Adventure
+                                </a>
+                            </div>
+                        {% elif notification.type == 'moderation' and session.role in ['admin', 'moderator'] %}
+                            <div class="mt-2">
+                                <a href="{{ url_for('moderate') }}" class="btn-3d btn-sm">
+                                    Go to Moderation Panel
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>You don't have any notifications yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

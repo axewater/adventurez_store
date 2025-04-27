@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Moderate Adventures - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <h1 class="mb-4">Moderate Adventures</h1>
+        
+        {% if pending %}
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Moderation Guidelines</h5>
+                <p>Please review each adventure carefully before approving or rejecting:</p>
+                <ul>
+                    <li>Ensure the adventure name and description are appropriate</li>
+                    <li>Check that the ZIP file contains valid game_data.json with version information</li>
+                    <li>Verify that the adventure content follows community guidelines</li>
+                </ul>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Author</th>
+                            <th>Description</th>
+                            <th>File Size</th>
+                            <th>Version</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for adventure in pending %}
+                            <tr>
+                                <td>{{ adventure.name }}</td>
+                                <td>{{ adventure.author }}</td>
+                                <td>{{ adventure.description|truncate(100) }}</td>
+                                <td>{{ (adventure.file_size / 1024)|int }} KB</td>
+                                <td>{{ adventure.version_compat }}</td>
+                                <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    <div class="d-flex gap-2">
+                                        <form action="{{ url_for('moderate_adventure', adventure_id=adventure.id) }}" method="post">
+                                            <input type="hidden" name="action" value="approve">
+                                            <button type="submit" class="btn-3d btn-success btn-sm">Approve</button>
+                                        </form>
+                                        <form action="{{ url_for('moderate_adventure', adventure_id=adventure.id) }}" method="post">
+                                            <input type="hidden" name="action" value="reject">
+                                            <button type="submit" class="btn-3d btn-danger btn-sm">Reject</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                <h5><i class="fas fa-check-circle me-2"></i>All Caught Up!</h5>
+                <p>There are no adventures pending moderation at this time.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

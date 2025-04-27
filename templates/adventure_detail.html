@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ adventure.name }} - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <div class="row">
+            <!-- Adventure Image -->
+            <div class="col-md-4 mb-4">
+                <div class="glass-panel h-100 d-flex align-items-center justify-content-center">
+                    <img src="{{ url_for('static', filename='images/default-adventure.png') }}" alt="{{ adventure.name }}" class="img-fluid rounded">
+                </div>
+            </div>
+            
+            <!-- Adventure Details -->
+            <div class="col-md-8">
+                <h1 class="mb-3">{{ adventure.name }}</h1>
+                
+                <!-- Rating -->
+                <div class="rating mb-3">
+                    {% for i in range(5) %}
+                        {% if i < adventure.avg_rating|int %}
+                            <i class="fas fa-star"></i>
+                        {% elif i < adventure.avg_rating|float %}
+                            <i class="fas fa-star-half-alt"></i>
+                        {% else %}
+                            <i class="far fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                    <span class="ms-2">{{ "%.1f"|format(adventure.avg_rating) }} ({{ adventure.rating_count }} ratings)</span>
+                </div>
+                
+                <!-- Metadata -->
+                <div class="mb-3">
+                    <p><strong>Author:</strong> {{ adventure.author }}</p>
+                    <p><strong>Created:</strong> {{ adventure.creation_date.strftime('%B %d, %Y') }}</p>
+                    <p><strong>File Size:</strong> {{ (adventure.file_size / 1024)|int }} KB</p>
+                    <p><strong>Compatible Version:</strong> {{ adventure.version_compat }}</p>
+                    <p><strong>Downloads:</strong> {{ adventure.downloads }}</p>
+                </div>
+                
+                <!-- Tags -->
+                <div class="mb-3">
+                    <h5>Tags:</h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for tag in tags %}
+                            <a href="{{ url_for('adventures', tag=tag.id) }}" class="badge badge-primary">{{ tag.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Download Button -->
+                {% if session.user_id %}
+                    <a href="{{ url_for('download_adventure', adventure_id=adventure.id) }}" class="btn-3d btn-success mb-3">
+                        <i class="fas fa-download me-2"></i>Download Adventure
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('login', next=url_for('adventure_detail', adventure_id=adventure.id)) }}" class="btn-3d mb-3">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Download
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="mt-4">
+            <h3>Description</h3>
+            <div class="glass-panel">
+                <p>{{ adventure.description }}</p>
+            </div>
+        </div>
+        
+        <!-- Rating Form -->
+        {% if session.user_id and session.user_id != adventure.author_id %}
+            <div class="mt-4">
+                <h3>Rate this Adventure</h3>
+                <div class="glass-panel">
+                    <form action="{{ url_for('rate_adventure', adventure_id=adventure.id) }}" method="post" class="rating-form">
+                        <div class="rating mb-3">
+                            {% for i in range(1, 6) %}
+                                <i class="{% if user_rating and i <= user_rating %}fas{% else %}far{% endif %} fa-star" data-value="{{ i }}"></i>
+                            {% endfor %}
+                            <input type="hidden" name="rating" id="rating-value" value="{{ user_rating or 0 }}">
+                        </div>
+                        <button type="submit" class="btn-3d" {% if not user_rating %}disabled{% endif %}>Submit Rating</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- Reviews -->
+        <div class="mt-4">
+            <h3>Reviews</h3>
+            
+            <!-- Add Review Form -->
+            {% if session.user_id and session.user_id != adventure.author_id %}
+                <div class="glass-panel mb-4">
+                    <form action="{{ url_for('add_review', adventure_id=adventure.id) }}" method="post">
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Write a Review</label>
+                            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-3d">Submit Review</button>
+                    </form>
+                </div>
+            {% endif %}
+            
+            <!-- Reviews List -->
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="glass-panel mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h5>{{ review.username }}</h5>
+                            <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                        </div>
+                        <p>{{ review.content }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="glass-panel">
+                    <p>No reviews yet. Be the first to review this adventure!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

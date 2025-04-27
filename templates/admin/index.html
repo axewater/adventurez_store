@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Text Adventure Builder Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        display: flex;
+    }
+    
+    .admin-sidebar {
+        width: 250px;
+        min-height: calc(100vh - 200px);
+    }
+    
+    .admin-content {
+        flex: 1;
+        padding-left: 30px;
+    }
+    
+    @media (max-width: 992px) {
+        .admin-container {
+            flex-direction: column;
+        }
+        
+        .admin-sidebar {
+            width: 100%;
+            min-height: auto;
+            margin-bottom: 30px;
+        }
+        
+        .admin-content {
+            padding-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <h1 class="mb-4">Admin Dashboard</h1>
+    
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="glass-panel">
+                <h5 class="mb-3">Admin Menu</h5>
+                <ul class="list-group">
+                    <a href="{{ url_for('admin_panel') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </a>
+                    <a href="{{ url_for('admin_stats') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </a>
+                    <a href="{{ url_for('moderate') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tasks me-2"></i>Moderation
+                        {% if pending_moderation_count > 0 %}
+                            <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
+                        {% endif %}
+                    </a>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-content">
+            <div class="glass-panel">
+                <h3 class="mb-4">Welcome to the Admin Dashboard</h3>
+                <p>From here, you can manage users, view statistics, and configure site settings.</p>
+                
+                <div class="row mt-4">
+                    <!-- Quick Stats -->
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel text-center">
+                            <i class="fas fa-users fa-3x mb-3 text-primary"></i>
+                            <h4>Total Users</h4>
+                            <h2 id="total-users">Loading...</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel text-center">
+                            <i class="fas fa-book fa-3x mb-3 text-primary"></i>
+                            <h4>Total Adventures</h4>
+                            <h2 id="total-adventures">Loading...</h2>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel text-center">
+                            <i class="fas fa-download fa-3x mb-3 text-primary"></i>
+                            <h4>Total Downloads</h4>
+                            <h2 id="total-downloads">Loading...</h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <h4 class="mt-4 mb-3">Recent Activity</h4>
+                <div class="glass-panel">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Count Today</th>
+                                    <th>Trend</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activity-table">
+                                <tr>
+                                    <td>Page Views</td>
+                                    <td>Loading...</td>
+                                    <td>Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Logins</td>
+                                    <td>Loading...</td>
+                                    <td>Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Registrations</td>
+                                    <td>Loading...</td>
+                                    <td>Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Downloads</td>
+                                    <td>Loading...</td>
+                                    <td>Loading...</td>
+                                </tr>
+                                <tr>
+                                    <td>Uploads</td>
+                                    <td>Loading...</td>
+                                    <td>Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <h4 class="mt-4 mb-3">Quick Actions</h4>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{{ url_for('admin_users') }}" class="btn-3d">
+                        <i class="fas fa-user-plus me-2"></i>Manage Users
+                    </a>
+                    <a href="{{ url_for('moderate') }}" class="btn-3d">
+                        <i class="fas fa-tasks me-2"></i>Moderate Adventures
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="btn-3d">
+                        <i class="fas fa-cog me-2"></i>Site Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fetch dashboard data
+        fetch('/admin/dashboard-data')
+            .then(response => response.json())
+            .then(data => {
+                // Update quick stats
+                document.getElementById('total-users').textContent = data.total_users;
+                document.getElementById('total-adventures').textContent = data.total_adventures;
+                document.getElementById('total-downloads').textContent = data.total_downloads;
+                
+                // Update activity table
+                const activityTable = document.getElementById('activity-table');
+                activityTable.innerHTML = '';
+                
+                const activities = [
+                    { name: 'Page Views', key: 'page_views' },
+                    { name: 'Logins', key: 'logins' },
+                    { name: 'Registrations', key: 'registrations' },
+                    { name: 'Downloads', key: 'downloads' },
+                    { name: 'Uploads', key: 'uploads' }
+                ];
+                
+                activities.forEach(activity => {
+                    const row = document.createElement('tr');
+                    
+                    const nameCell = document.createElement('td');
+                    nameCell.textContent = activity.name;
+                    
+                    const countCell = document.createElement('td');
+                    countCell.textContent = data.today_stats[activity.key] || 0;
+                    
+                    const trendCell = document.createElement('td');
+                    const trend = data.trends[activity.key];
+                    if (trend > 0) {
+                        trendCell.innerHTML = `<span class="text-success"><i class="fas fa-arrow-up me-1"></i>${trend}%</span>`;
+                    } else if (trend < 0) {
+                        trendCell.innerHTML = `<span class="text-danger"><i class="fas fa-arrow-down me-1"></i>${Math.abs(trend)}%</span>`;
+                    } else {
+                        trendCell.innerHTML = `<span class="text-muted"><i class="fas fa-minus me-1"></i>0%</span>`;
+                    }
+                    
+                    row.appendChild(nameCell);
+                    row.appendChild(countCell);
+                    row.appendChild(trendCell);
+                    
+                    activityTable.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching dashboard data:', error);
+            });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}My Adventures - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <h1 class="mb-4">My Adventures</h1>
+        
+        {% if adventures %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Rating</th>
+                            <th>Downloads</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for adventure in adventures %}
+                            <tr>
+                                <td>{{ adventure.name }}</td>
+                                <td>
+                                    {% if adventure.approved %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="rating">
+                                        {% for i in range(5) %}
+                                            {% if i < adventure.avg_rating|int %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif i < adventure.avg_rating|float %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <small class="text-muted">({{ adventure.rating_count }})</small>
+                                    </div>
+                                </td>
+                                <td>{{ adventure.downloads }}</td>
+                                <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
+                                <td>
+                                    {% if adventure.approved %}
+                                        <a href="{{ url_for('adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
+                                    {% else %}
+                                        <button class="btn-3d btn-sm" disabled>Pending Review</button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <p>You haven't uploaded any adventures yet.</p>
+                <a href="{{ url_for('upload_adventure') }}" class="btn-3d mt-3">Upload Your First Adventure</a>
+            </div>
+        {% endif %}
+        
+        <div class="mt-4">
+            <a href="{{ url_for('upload_adventure') }}" class="btn-3d">
+                <i class="fas fa-upload me-2"></i>Upload New Adventure
+            </a>
+        </div>
+    </div>
+</section>
+{% endblock %}

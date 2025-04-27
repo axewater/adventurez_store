@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Adventure - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <h1 class="mb-4">Upload Your Adventure</h1>
+        
+        <form action="{{ url_for('upload_adventure') }}" method="post" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="name" class="form-label">Adventure Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="5" required></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Tags (select at least one)</label>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for tag in tags %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.id }}" id="tag-{{ tag.id }}">
+                            <label class="form-check-label" for="tag-{{ tag.id }}">{{ tag.name }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="adventure-file" class="form-label">Adventure File (ZIP only, max 50MB)</label>
+                <input type="file" class="form-control" id="adventure-file" name="adventure_file" accept=".zip" required>
+                <div class="form-text">Your adventure must be a ZIP file containing all necessary files, including game_data.json with version information.</div>
+            </div>
+            
+            <div class="alert alert-info">
+                <h5><i class="fas fa-info-circle me-2"></i>Important Information</h5>
+                <p>Your adventure will be reviewed by moderators before it appears in the gallery. This process may take up to 24 hours.</p>
+                <p>Make sure your ZIP file includes a game_data.json file with version compatibility information.</p>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn-3d">Upload Adventure</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

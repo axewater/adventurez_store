@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Adventures - Text Adventure Builder Store{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="glass-panel">
+        <h1 class="mb-4">Browse Adventures</h1>
+        
+        <!-- Search and Filter -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <form action="{{ url_for('adventures') }}" method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Search adventures..." value="{{ search }}">
+                    <button type="submit" class="btn-3d">Search</button>
+                </form>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex justify-content-end">
+                    <select class="form-select me-2" id="sort-select" onchange="window.location = this.value;">
+                        <option value="{{ url_for('adventures', tag=current_tag, search=search, sort='newest') }}" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+                        <option value="{{ url_for('adventures', tag=current_tag, search=search, sort='oldest') }}" {% if sort == 'oldest' %}selected{% endif %}>Oldest</option>
+                        <option value="{{ url_for('adventures', tag=current_tag, search=search, sort='highest_rated') }}" {% if sort == 'highest_rated' %}selected{% endif %}>Highest Rated</option>
+                        <option value="{{ url_for('adventures', tag=current_tag, search=search, sort='most_downloaded') }}" {% if sort == 'most_downloaded' %}selected{% endif %}>Most Downloaded</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tags Filter -->
+        <div class="mb-4">
+            <h5>Filter by Tags:</h5>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('adventures', search=search, sort=sort) }}" class="badge {% if not current_tag %}badge-primary{% else %}bg-secondary{% endif %}">All</a>
+                {% for tag in tags %}
+                    <a href="{{ url_for('adventures', tag=tag.id, search=search, sort=sort) }}" class="badge {% if current_tag == tag.id %}badge-primary{% else %}bg-secondary{% endif %}">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Adventures List -->
+        <div class="row">
+            {% if adventures %}
+                {% for adventure in adventures %}
+                    <div class="col-md-4 mb-4">
+                        <div class="glass-panel h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ adventure.name }}</h5>
+                                <div class="rating mb-2">
+                                    {% for i in range(5) %}
+                                        {% if i < adventure.avg_rating|int %}
+                                            <i class="fas fa-star"></i>
+                                        {% elif i < adventure.avg_rating|float %}
+                                            <i class="fas fa-star-half-alt"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <small class="text-muted">({{ adventure.rating_count }})</small>
+                                </div>
+                                <p class="card-text">{{ adventure.description|truncate(100) }}</p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="text-muted">By {{ adventure.author }}</small>
+                                    <small class="text-muted">{{ adventure.downloads }} downloads</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">{{ adventure.creation_date.strftime('%b %d, %Y') }}</small>
+                                    <a href="{{ url_for('adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No adventures found matching your criteria. Try adjusting your search or filters.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - Text Adventure Builder Store{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        display: flex;
+    }
+    
+    .admin-sidebar {
+        width: 250px;
+        min-height: calc(100vh - 200px);
+    }
+    
+    .admin-content {
+        flex: 1;
+        padding-left: 30px;
+    }
+    
+    @media (max-width: 992px) {
+        .admin-container {
+            flex-direction: column;
+        }
+        
+        .admin-sidebar {
+            width: 100%;
+            min-height: auto;
+            margin-bottom: 30px;
+        }
+        
+        .admin-content {
+            padding-left: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <h1 class="mb-4">Site Settings</h1>
+    
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="glass-panel">
+                <h5 class="mb-3">Admin Menu</h5>
+                <ul class="list-group">
+                    <a href="{{ url_for('admin_panel') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('admin_users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </a>
+                    <a href="{{ url_for('admin_stats') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </a>
+                    <a href="{{ url_for('admin_settings') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </a>
+                    <a href="{{ url_for('moderate') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tasks me-2"></i>Moderation
+                        {% if pending_moderation_count > 0 %}
+                            <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
+                        {% endif %}
+                    </a>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-content">
+            <div class="glass-panel">
+                <h3 class="mb-4">Site Settings</h3>
+                
+                <form action="{{ url_for('admin_settings') }}" method="post">
+                    <!-- Theme Settings -->
+                    <div class="mb-4">
+                        <h5>Theme Settings</h5>
+                        <div class="glass-panel">
+                            <div class="mb-3">
+                                <label class="form-label">Default Theme</label>
+                                <div class="d-flex gap-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="theme-light" value="light" {% if settings.theme == 'light' %}checked{% endif %}>
+                                        <label class="form-check-label" for="theme-light">
+                                            Light Theme
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="theme" id="theme-dark" value="dark" {% if settings.theme == 'dark' %}checked{% endif %}>
+                                        <label class="form-check-label" for="theme-dark">
+                                            Dark Theme
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="allow-user-theme" checked disabled>
+                                    <label class="form-check-label" for="allow-user-theme">
+                                        Allow users to toggle theme (coming soon)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Future Settings Sections -->
+                    <div class="mb-4">
+                        <h5>Upload Settings</h5>
+                        <div class="glass-panel">
+                            <div class="mb-3">
+                                <label for="max-upload-size" class="form-label">Maximum Upload Size (MB)</label>
+                                <input type="number" class="form-control" id="max-upload-size" value="50" disabled>
+                                <div class="form-text">This setting will be configurable in a future update.</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="auto-approve" disabled>
+                                    <label class="form-check-label" for="auto-approve">
+                                        Auto-approve uploads from trusted users (coming soon)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn-3d">Save Settings</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
