@@ -146,14 +146,7 @@
                         <canvas id="daily-stats-chart"></canvas>
                     </div>
                     <script id="daily-stats-data" type="application/json">
-                        {
-                            "days": {{ daily_stats.page_views.days|tojson }},
-                            "page_views": {{ daily_stats.page_views.values|tojson }},
-                            "logins": {{ daily_stats.logins.values|tojson }},
-                            "registrations": {{ daily_stats.registrations.values|tojson }},
-                            "downloads": {{ daily_stats.downloads.values|tojson }},
-                            "uploads": {{ daily_stats.uploads.values|tojson }}
-                        }
+                        {{ daily_stats|tojson }}
                     </script>
                 </div>
             </div>

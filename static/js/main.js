@@ -250,11 +250,12 @@ function initializeCharts() {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: dailyStatsData.days,
+                // Use the 'days' array from one of the stats (assuming they are the same)
+                labels: dailyStatsData.page_views.days, 
                 datasets: [
                     {
                         label: 'Page Views',
-                        data: dailyStatsData.page_views,
+                        data: dailyStatsData.page_views.values,
                         borderColor: 'rgba(106, 17, 203, 1)',
                         backgroundColor: 'rgba(106, 17, 203, 0.1)',
                         tension: 0.4,
@@ -262,15 +263,23 @@ function initializeCharts() {
                     },
                     {
                         label: 'Logins',
-                        data: dailyStatsData.logins,
+                        data: dailyStatsData.logins.values,
                         borderColor: 'rgba(37, 117, 252, 1)',
                         backgroundColor: 'rgba(37, 117, 252, 0.1)',
                         tension: 0.4,
                         fill: true
                     },
                     {
+                        label: 'Registrations',
+                        data: dailyStatsData.registrations.values,
+                        borderColor: 'rgba(255, 193, 7, 1)', // Example color, adjust as needed
+                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    },
+                    {
                         label: 'Downloads',
-                        data: dailyStatsData.downloads,
+                        data: dailyStatsData.downloads.values,
                         borderColor: 'rgba(40, 167, 69, 1)',
                         backgroundColor: 'rgba(40, 167, 69, 0.1)',
                         tension: 0.4,
@@ -278,7 +287,7 @@ function initializeCharts() {
                     },
                     {
                         label: 'Uploads',
-                        data: dailyStatsData.uploads,
+                        data: dailyStatsData.uploads.values,
                         borderColor: 'rgba(255, 193, 7, 1)',
                         backgroundColor: 'rgba(255, 193, 7, 0.1)',
                         tension: 0.4,
