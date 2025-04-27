@@ -767,36 +767,83 @@ def admin_users():
     
     return render_template('admin/users.html', users=processed_users)
 
-@app.route('/admin/user/<int:user_id>', methods=['POST'])
+@app.route('/admin/user/add', methods=['POST'])
+@admin_required
+def admin_add_user():
+    username = request.form.get('username')
+    email = request.form.get('email')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+    role = request.form.get('role')
+
+    # Basic validation
+    if not username or not email or not password or not confirm_password or not role:
+        flash('All fields are required', 'error')
+        return redirect(url_for('admin_users'))
+
+    if password != confirm_password:
+        flash('Passwords do not match', 'error')
+        return redirect(url_for('admin_users'))
+
+    if role not in ['user', 'moderator', 'admin']:
+        flash('Invalid role specified', 'error')
+        return redirect(url_for('admin_users'))
+
+    conn = get_db_connection()
+
+    # Check if username or email already exists
+    existing_user = conn.execute(
+        'SELECT id FROM users WHERE username = ? OR email = ?', 
+        (username, email)
+    ).fetchone()
+
+    if existing_user:
+        conn.close()
+        flash('Username or email already exists', 'error')
+        return redirect(url_for('admin_users'))
+
+    # Create new user
+    hashed_password = hash_password(password)
+    conn.execute(
+        'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
+        (username, email, hashed_password, role)
+    )
+    conn.commit()
+    conn.close()
+
+    log_statistic('registrations') # Log admin-added user as registration
+    flash(f'User "{username}" added successfully', 'success')
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin/user/update/<int:user_id>', methods=['POST'], endpoint='admin_update_user')
 @admin_required
 def admin_update_user(user_id):
-    role = request.form.get('role')
-    
-    if role not in ['user', 'moderator', 'admin']:
-        flash('Invalid role', 'error')
+    """Updates a user's role."""
+    new_role = request.form.get('role')
+
+    # Validate role
+    if new_role not in ['user', 'moderator', 'admin']:
+        flash('Invalid role specified', 'error')
         return redirect(url_for('admin_users'))
-    
+
     conn = get_db_connection()
-    
+
     # Check if user exists
-    user = conn.execute('SELECT id FROM users WHERE id = ?', (user_id,)).fetchone()
-    
+    user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
     if not user:
         conn.close()
         flash('User not found', 'error')
         return redirect(url_for('admin_users'))
-    
+
     # Update user role
-    conn.execute('''
-        UPDATE users
-        SET role = ?
-        WHERE id = ?
-    ''', (role, user_id))
-    
+    conn.execute(
+        'UPDATE users SET role = ? WHERE id = ?',
+        (new_role, user_id)
+    )
     conn.commit()
     conn.close()
-    
-    flash('User role updated successfully', 'success')
+
+    flash(f'User "{user["username"]}" role updated successfully to {new_role}', 'success')
     return redirect(url_for('admin_users'))
 
 @app.route('/admin/settings', methods=['GET', 'POST'])
