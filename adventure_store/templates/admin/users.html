@@ -124,12 +124,12 @@
                                     <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
                                     <td>{{ user.last_login.strftime('%b %d, %Y %H:%M') if user.last_login else 'Never' }}</td>
                                     <td>
-                                        <button class="btn-3d btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}" data-bs-backdrop="false">
+                                        <button class="btn-3d btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
                                         
                                         <!-- Edit User Modal -->
-                                        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal fade" id="editUserModal{{ user.id }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
                                             <div class="modal-dialog">
                                                 <div class="modal-content">
                                                     <div class="modal-header">
