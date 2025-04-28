@@ -6,8 +6,8 @@
 <!-- Hero Section -->
 <section class="hero fade-in">
     <div class="glass-panel">
-        <h1>Welcome to Text Adventure Builder Store</h1>
-        <p>Explore and share amazing text adventures created with Text Adventure Builder. Download adventures, rate them, leave reviews, and upload your own creations!</p>
+        <h1>Text Adventure Builder Store</h1>
+        <p>Explore and share amazing text adventures created with Text Adventure Builder. Download adventures and upload your own creations!</p>
         <div class="d-flex justify-content-center gap-3">
             <a href="{{ url_for('main.adventures') }}" class="btn-3d">Browse Adventures</a>
             {% if not session.user_id %}
@@ -16,6 +16,10 @@
                 <a href="{{ url_for('user.upload_adventure') }}" class="btn-3d btn-secondary">Upload Your Adventure</a>
             {% endif %}
         </div>
+        <p class="mb-4">
+            To play the adventures, you need the Text Adventure Builder application.
+        </p>
+        <a href="https://github.com/axewater/adventurez_store" target="_blank" rel="noopener noreferrer" class="btn-3d btn-success">Download from GitHub <i class="fab fa-github ms-2"></i></a>
     </div>
 </section>
 

@@ -73,6 +73,7 @@ body {
   transition: all 0.3s ease;
   text-decoration: none;
   text-align: center;
+  margin-bottom: 10px;
 }
 
 .btn-3d:hover {
@@ -153,13 +154,13 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 30px 15px;
+  padding: 10px 15px;
 }
 
 /* Hero Section */
 .hero {
   text-align: center;
-  padding: 80px 0;
+  padding: 10px 0;
 }
 
 .hero h1 {
@@ -362,8 +363,6 @@ body {
 }
 
 .admin-content {
-  margin-left: 250px;
-  padding: 20px;
   transition: all 0.3s ease;
 }
 
