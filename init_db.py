@@ -123,6 +123,32 @@ CREATE TABLE IF NOT EXISTS statistics (
 )
 ''')
 
+# Create api_keys table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS api_keys (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    key TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    user_id INTEGER NOT NULL,
+    is_active INTEGER DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+)
+''')
+
+# Create api_logs table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS api_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    api_key_name TEXT,
+    ip_address TEXT,
+    endpoint TEXT NOT NULL,
+    status_code INTEGER NOT NULL,
+    success BOOLEAN NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)
+''')
+
 # Insert default admin user
 admin_password = hash_password("Roll14me!")
 cursor.execute('''

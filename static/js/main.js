@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize charts if on admin stats page
     if (document.getElementById('stats-page')) {
         initializeCharts();
+        initializeApiUsageChart(); // Call the new function
     }
 
     // Alert auto-close
@@ -325,6 +326,85 @@ function initializeCharts() {
                         }
                     }
                 }
+            }
+        });
+    }
+}
+
+// Function to initialize API Usage Chart
+function initializeApiUsageChart() {
+    if (document.getElementById('api-usage-chart')) {
+        const ctx = document.getElementById('api-usage-chart').getContext('2d');
+        const apiUsageDataRaw = JSON.parse(document.getElementById('api-usage-data').textContent);
+
+        // --- Data Processing for Chart.js ---
+        // We need a consistent timeline (last 30 days) and datasets for each key (success/failure)
+        const labels = []; // Array of dates for the X-axis
+        const datasets = [];
+        const today = new Date();
+        const colors = [ // Define some colors for different keys
+            { success: 'rgba(40, 167, 69, 0.8)', failure: 'rgba(220, 53, 69, 0.8)' }, // Green/Red
+            { success: 'rgba(37, 117, 252, 0.8)', failure: 'rgba(255, 193, 7, 0.8)' }, // Blue/Yellow
+            { success: 'rgba(106, 17, 203, 0.8)', failure: 'rgba(23, 162, 184, 0.8)' }, // Purple/Teal
+            { success: 'rgba(253, 126, 20, 0.8)', failure: 'rgba(108, 117, 125, 0.8)' }, // Orange/Gray
+        ];
+        let colorIndex = 0;
+
+        // Generate labels for the last 30 days
+        for (let i = 29; i >= 0; i--) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+            labels.push(date.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+        }
+
+        // Process data for each API key
+        for (const keyName in apiUsageDataRaw) {
+            const keyData = apiUsageDataRaw[keyName];
+            const successData = new Array(30).fill(0); // Initialize with zeros
+            const failureData = new Array(30).fill(0);
+
+            // Map the fetched counts to the correct date index
+            for (let i = 0; i < keyData.days.length; i++) {
+                const day = keyData.days[i];
+                const index = labels.indexOf(day);
+                if (index !== -1) {
+                    // Assuming success/failure arrays align with days array
+                    if (keyData.success[i] !== undefined) successData[index] = keyData.success[i];
+                    if (keyData.failure[i] !== undefined) failureData[index] = keyData.failure[i];
+                }
+            }
+
+            const keyColors = colors[colorIndex % colors.length];
+            colorIndex++;
+
+            datasets.push({
+                label: `${keyName} - Success`,
+                data: successData,
+                borderColor: keyColors.success,
+                backgroundColor: keyColors.success.replace('0.8', '0.1'), // Lighter fill
+                tension: 0.1,
+                fill: false, // Or true if you want area chart
+                type: 'line', // Can mix types, e.g., line for success, bar for failure
+            });
+            datasets.push({
+                label: `${keyName} - Failure`,
+                data: failureData,
+                borderColor: keyColors.failure,
+                backgroundColor: keyColors.failure.replace('0.8', '0.1'),
+                tension: 0.1,
+                fill: false,
+                type: 'line',
+            });
+        }
+
+        // --- Create Chart ---
+        new Chart(ctx, {
+            data: { labels: labels, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-color') }, grid: { color: 'rgba(200, 200, 200, 0.1)' } }, x: { ticks: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-color') }, grid: { color: 'rgba(200, 200, 200, 0.1)' } } },
+                plugins: { legend: { position: 'bottom', labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-color') } } }
             }
         });
     }

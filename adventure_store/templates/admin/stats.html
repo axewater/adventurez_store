@@ -58,6 +58,9 @@
                     <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-users me-2"></i>User Management
                     </a>
+                    <a href="{{ url_for('admin.admin_api_keys') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-key me-2"></i>API Keys
+                    </a>
                     <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action active">
                         <i class="fas fa-chart-bar me-2"></i>Statistics
                     </a>
@@ -140,13 +143,25 @@
                 </div>
                 
                 <!-- Daily Stats Chart -->
-                <div class="glass-panel">
+                <div class="glass-panel mb-4">
                     <h4 class="mb-3">Activity Over Time (Last 30 Days)</h4>
                     <div class="chart-container">
                         <canvas id="daily-stats-chart"></canvas>
                     </div>
                     <script id="daily-stats-data" type="application/json">
                         {{ daily_stats|tojson }}
+                    </script>
+                </div>
+                
+                <!-- API Usage Chart -->
+                <div class="glass-panel mt-4">
+                    <h4 class="mb-3">API Usage Over Time (Last 30 Days)</h4>
+                    <div class="chart-container">
+                        <canvas id="api-usage-chart"></canvas>
+                    </div>
+                    <!-- Data will be fetched and processed by JavaScript -->
+                    <script id="api-usage-data" type="application/json">
+                        {{ api_usage|tojson }}
                     </script>
                 </div>
             </div>

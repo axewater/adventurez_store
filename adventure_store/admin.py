@@ -4,6 +4,7 @@ from flask import (
 from .db import get_db
 from .utils import parse_datetime, log_statistic, hash_password
 from .decorators import admin_required
+import secrets # For generating API keys
 import datetime
 import sqlite3
 
@@ -121,6 +122,106 @@ def admin_settings():
     # GET request handled by context processor, just render template
     return render_template('admin/settings.html')
 
+# --- API Key Management ---
+
+@admin_bp.route('/api-keys')
+@admin_required
+def admin_api_keys():
+    conn = get_db()
+    processed_keys = []
+    users = []
+    try:
+        keys_data = conn.execute('''
+            SELECT k.id, k.key, k.name, k.is_active, k.created_at, u.username
+            FROM api_keys k JOIN users u ON k.user_id = u.id
+            ORDER BY k.created_at DESC
+        ''').fetchall()
+        for key_row in keys_data:
+            key_dict = dict(key_row)
+            key_dict['created_at'] = parse_datetime(key_dict['created_at'])
+            processed_keys.append(key_dict)
+
+        # Fetch users for the 'Add Key' modal dropdown
+        users = conn.execute('SELECT id, username, email FROM users ORDER BY username').fetchall()
+
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error fetching API keys: {e}")
+        flash("Could not load API keys due to a database error.", "error")
+
+    return render_template('admin/api_keys.html', api_keys=processed_keys, users=users)
+
+@admin_bp.route('/api-keys/create', methods=['POST'])
+@admin_required
+def admin_create_api_key():
+    name = request.form.get('name')
+    user_id = request.form.get('user_id', type=int)
+
+    if not name or not user_id:
+        flash('Key name and associated user are required.', 'error')
+        return redirect(url_for('admin.admin_api_keys'))
+
+    conn = get_db()
+    try:
+        # Check if user exists
+        user = conn.execute('SELECT id FROM users WHERE id = ?', (user_id,)).fetchone()
+        if not user:
+            flash('Selected user does not exist.', 'error')
+            return redirect(url_for('admin.admin_api_keys'))
+
+        new_key = secrets.token_urlsafe(32) # Generate a secure random key
+        conn.execute('INSERT INTO api_keys (key, name, user_id) VALUES (?, ?, ?)', (new_key, name, user_id))
+        conn.commit()
+        flash(f'API Key "{name}" created successfully.', 'success')
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error creating API key: {e}")
+        flash('A database error occurred while creating the API key.', 'error')
+
+    return redirect(url_for('admin.admin_api_keys'))
+
+@admin_bp.route('/api-keys/toggle/<int:key_id>', methods=['POST'])
+@admin_required
+def admin_toggle_api_key(key_id):
+    conn = get_db()
+    try:
+        key = conn.execute('SELECT id, is_active FROM api_keys WHERE id = ?', (key_id,)).fetchone()
+        if not key:
+            flash('API Key not found.', 'error')
+            return redirect(url_for('admin.admin_api_keys'))
+
+        new_status = 0 if key['is_active'] else 1
+        conn.execute('UPDATE api_keys SET is_active = ? WHERE id = ?', (new_status, key_id))
+        conn.commit()
+        status_text = "deactivated" if new_status == 0 else "activated"
+        flash(f'API Key {status_text} successfully.', 'success')
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error toggling API key (ID: {key_id}): {e}")
+        flash('A database error occurred while updating the key status.', 'error')
+
+    return redirect(url_for('admin.admin_api_keys'))
+
+@admin_bp.route('/api-keys/delete/<int:key_id>', methods=['POST'])
+@admin_required
+def admin_delete_api_key(key_id):
+    conn = get_db()
+    try:
+        # Optional: Check if key exists first
+        key = conn.execute('SELECT id FROM api_keys WHERE id = ?', (key_id,)).fetchone()
+        if not key:
+            flash('API Key not found.', 'error')
+            return redirect(url_for('admin.admin_api_keys'))
+
+        # Optional: Consider deleting related logs? For now, we keep them.
+        conn.execute('DELETE FROM api_keys WHERE id = ?', (key_id,))
+        conn.commit()
+        flash('API Key deleted successfully.', 'success')
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error deleting API key (ID: {key_id}): {e}")
+        flash('A database error occurred while deleting the API key.', 'error')
+
+    return redirect(url_for('admin.admin_api_keys'))
+
+# --- End API Key Management ---
+
 @admin_bp.route('/dashboard-data')
 @admin_required
 def admin_dashboard_data():
@@ -174,7 +275,7 @@ def admin_stats():
     conn = get_db()
     stats_data = {
         'total_users': 0, 'user_roles': [], 'total_adventures': 0,
-        'pending_adventures': 0, 'total_downloads': 0, 'tag_usage': [],
+        'pending_adventures': 0, 'total_downloads': 0, 'tag_usage': [], 'api_usage': {},
         'daily_stats': {}
     }
     try:
@@ -201,6 +302,31 @@ def admin_stats():
             ''', (stat_name, thirty_days_ago)).fetchall()
             daily_stats[stat_name] = {'days': [row['day'] for row in rows], 'values': [row['value'] for row in rows]}
         stats_data['daily_stats'] = daily_stats
+
+        # Fetch API usage data (last 30 days, grouped by key name and success)
+        api_usage = {}
+        api_log_rows = conn.execute('''
+            SELECT date(timestamp) as day, api_key_name, success, COUNT(*) as count
+            FROM api_logs
+            WHERE date(timestamp) >= ?
+            GROUP BY day, api_key_name, success
+            ORDER BY day
+        ''', (thirty_days_ago,)).fetchall()
+
+        # Process API logs into a structure suitable for Chart.js
+        # Example structure: { 'KeyName1': {'days': [...], 'success': [...], 'failure': [...]}, ... }
+        for row in api_log_rows:
+            key_name = row['api_key_name'] if row['api_key_name'] else 'Invalid/Unknown'
+            if key_name not in api_usage:
+                api_usage[key_name] = {'days': [], 'success': [], 'failure': []}
+            # This aggregation might need refinement for charting (e.g., filling missing days)
+            # For simplicity, we'll just store counts per day found in logs
+            api_usage[key_name]['days'].append(row['day'])
+            if row['success']:
+                api_usage[key_name]['success'].append(row['count'])
+            else:
+                api_usage[key_name]['failure'].append(row['count'])
+        stats_data['api_usage'] = api_usage
 
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error fetching admin stats: {e}")

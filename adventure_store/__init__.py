@@ -45,12 +45,13 @@ def create_app(test_config=None):
     db.init_app(app)
 
     # --- Blueprints ---
-    from . import main, auth, user, admin, moderate
+    from . import main, auth, user, admin, moderate, api
     app.register_blueprint(main.main_bp)
     app.register_blueprint(auth.auth_bp)
     app.register_blueprint(user.user_bp)
     app.register_blueprint(admin.admin_bp)
     app.register_blueprint(moderate.moderate_bp)
+    app.register_blueprint(api.api_bp)
 
     # --- Context Processors ---
     from .utils import get_site_settings, get_pending_moderation_count
