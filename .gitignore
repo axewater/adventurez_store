@@ -1,2 +1,6 @@
 *.db
 *.pyc
+venv/
+__pycache__/
+nohup.out
+adventure_store.db
