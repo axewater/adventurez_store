@@ -75,7 +75,7 @@
                 
                 <!-- Add New User Button -->
                 <div class="mb-4">
-                    <button class="btn-3d" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="fas fa-user-plus me-2"></i>Add New User</button>
+                    <button class="btn-3d" data-bs-toggle="modal" data-bs-target="#addUserModal" data-bs-backdrop="false"><i class="fas fa-user-plus me-2"></i>Add New User</button>
                 </div>
                 
                 <!-- Search and Filter -->
@@ -124,7 +124,7 @@
                                     <td>{{ user.created_at.strftime('%b %d, %Y') }}</td>
                                     <td>{{ user.last_login.strftime('%b %d, %Y %H:%M') if user.last_login else 'Never' }}</td>
                                     <td>
-                                        <button class="btn-3d btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}">
+                                        <button class="btn-3d btn-sm" data-bs-toggle="modal" data-bs-target="#editUserModal{{ user.id }}" data-bs-backdrop="false">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
                                         
@@ -163,7 +163,7 @@
     </div>
     
     <!-- Add User Modal -->
-    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true" data-bs-backdrop="false">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
