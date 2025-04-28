@@ -5,6 +5,7 @@ from flask import (
 from .db import get_db
 from .utils import parse_datetime, log_statistic
 from .decorators import login_required
+
 import os
 import sqlite3
 
@@ -220,3 +221,10 @@ def download_adventure(adventure_id):
         # Fallback if adventure or file_path was somehow null after initial check
         flash('Adventure file path is missing.', 'error')
         return redirect(url_for('main.adventure_detail', adventure_id=adventure_id))
+
+@main_bp.route('/favicon.ico')
+def favicon():
+    # Use current_app.static_folder which points to the correct /static directory
+    return send_from_directory(current_app.static_folder,
+                               'favicon.ico',
+                               mimetype='image/vnd.microsoft.icon')
