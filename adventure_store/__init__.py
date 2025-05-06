@@ -16,7 +16,7 @@ def create_app(test_config=None):
         SECRET_KEY=secrets.token_hex(16), # Generate a new key each time if not set
         DATABASE=os.path.join(app.instance_path, 'adventure_store.db'),
         UPLOAD_FOLDER=os.path.join(app.root_path, '..', 'static', 'uploads'), # Relative to app package
-        MAX_CONTENT_LENGTH=50 * 1024 * 1024,  # 50MB max upload size
+        MAX_CONTENT_LENGTH=500 * 1024 * 1024,  # 500MB max upload size (Increased significantly)
     )
 
     if test_config is None:
@@ -76,12 +76,5 @@ def create_app(test_config=None):
         # Log the error details
         app.logger.error(f"Server Error: {e}", exc_info=True)
         return render_template('errors/500.html'), 500
-
-    # --- Root Route (Optional, can be in main blueprint) ---
-    # Example: Redirect root to main index
-    # @app.route('/')
-    # def root_redirect():
-    #    from flask import redirect, url_for
-    #    return redirect(url_for('main.index'))
 
     return app

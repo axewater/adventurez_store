@@ -110,14 +110,14 @@
                         </div>
                     </div>
                     
-                    <!-- Future Settings Sections -->
+                    <!-- Upload Settings -->
                     <div class="mb-4">
                         <h5>Upload Settings</h5>
                         <div class="glass-panel">
                             <div class="mb-3">
                                 <label for="max-upload-size" class="form-label">Maximum Upload Size (MB)</label>
-                                <input type="number" class="form-control" id="max-upload-size" value="50" disabled>
-                                <div class="form-text">This setting will be configurable in a future update.</div>
+                                <input type="number" class="form-control" id="max-upload-size" name="max_upload_size" value="{{ settings.max_upload_size|default(50) }}" min="1" required>
+                                <div class="form-text">Set the maximum allowed size for adventure file uploads in Megabytes (MB).</div>
                             </div>
                             
                             <div class="mb-3">

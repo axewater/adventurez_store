@@ -162,6 +162,11 @@ INSERT OR IGNORE INTO site_settings (setting_name, setting_value)
 VALUES (?, ?)
 ''', ('theme', 'light'))
 
+cursor.execute('''
+INSERT OR IGNORE INTO site_settings (setting_name, setting_value)
+VALUES (?, ?)
+''', ('max_upload_size', '50')) # Default 50MB
+
 # Insert some default tags
 default_tags = ['Fantasy', 'Sci-Fi', 'Horror', 'Mystery', 'Comedy', 'Adventure', 'Historical', 'Educational']
 for tag in default_tags:

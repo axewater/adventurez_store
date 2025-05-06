@@ -3,7 +3,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from .db import get_db
-from .utils import log_statistic # We might need a dedicated API log function
+from .utils import log_statistic, get_site_settings
 import os
 import datetime
 import zipfile
@@ -77,6 +77,17 @@ def submit_adventure():
         log_api_request(api_key_name, request.path, 400, False)
         return jsonify({"error": "Only ZIP files are allowed"}), 400
 
+    # --- File Size Check ---
+    site_settings = get_site_settings()
+    max_mb = int(site_settings.get('max_upload_size', 50)) # Default 50MB if not set
+    max_bytes = max_mb * 1024 * 1024
+    file.seek(0, os.SEEK_END) # Go to end of file
+    file_size = file.tell() # Get size
+    file.seek(0) # Reset pointer to beginning
+    if file_size > max_bytes:
+        log_api_request(api_key_name, request.path, 400, False)
+        return jsonify({"error": f"File size ({file_size // 1024 // 1024}MB) exceeds the maximum allowed size ({max_mb}MB)."}), 400
+
     # --- Metadata Handling (Example: Expecting JSON in 'metadata' form field) ---
     # Decide how metadata like name, description, tags are sent.
     # Option 1: Inside the ZIP (game_data.json) - Preferred for version
@@ -127,7 +138,6 @@ def submit_adventure():
     try:
         # Save file
         file.save(file_path)
-        file_size = os.path.getsize(file_path)
 
         # Extract version compatibility from game_data.json inside the zip
         version_compat = "Unknown"

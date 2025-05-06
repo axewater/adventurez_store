@@ -3,7 +3,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from .db import get_db
-from .utils import parse_datetime, log_statistic
+from .utils import parse_datetime, log_statistic, get_site_settings
 from .decorators import login_required
 import os
 import datetime
@@ -88,6 +88,18 @@ def upload_adventure():
             tags_data = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
             return render_template('upload.html', tags=tags_data)
 
+        # --- File Size Check ---
+        site_settings = get_site_settings()
+        max_mb = int(site_settings.get('max_upload_size', 50)) # Default 50MB if not set
+        max_bytes = max_mb * 1024 * 1024
+        file.seek(0, os.SEEK_END) # Go to end of file
+        file_size = file.tell() # Get size
+        file.seek(0) # Reset pointer to beginning
+        if file_size > max_bytes:
+            flash(f'File size ({file_size // 1024 // 1024}MB) exceeds the maximum allowed size ({max_mb}MB).', 'error')
+            tags_data = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
+            return render_template('upload.html', tags=tags_data)
+
         # Secure filename and create path
         timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
         safe_base_filename = secure_filename(f"{session['username']}_{timestamp}.zip")
@@ -98,7 +110,6 @@ def upload_adventure():
         try:
             # Save file
             file.save(file_path)
-            file_size = os.path.getsize(file_path)
 
             # Extract version compatibility
             version_compat = "Unknown"

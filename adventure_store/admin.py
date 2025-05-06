@@ -2,7 +2,7 @@ from flask import (
     Blueprint, render_template, request, redirect, url_for, flash, session, jsonify, current_app
 )
 from .db import get_db
-from .utils import parse_datetime, log_statistic, hash_password
+from .utils import parse_datetime, log_statistic, hash_password, get_site_settings
 from .decorators import admin_required
 import secrets # For generating API keys
 import datetime
@@ -107,11 +107,23 @@ def admin_settings():
     conn = get_db()
     if request.method == 'POST':
         theme = request.form.get('theme')
+        max_upload_size_str = request.form.get('max_upload_size')
+
         if theme not in ['light', 'dark']:
             flash('Invalid theme selected', 'error')
             return redirect(url_for('admin.admin_settings'))
+
+        try:
+            max_upload_size = int(max_upload_size_str)
+            if max_upload_size <= 0:
+                raise ValueError("Max upload size must be positive.")
+        except (ValueError, TypeError):
+            flash('Invalid maximum upload size. Please enter a positive number.', 'error')
+            return redirect(url_for('admin.admin_settings'))
+
         try:
             conn.execute("UPDATE site_settings SET setting_value = ? WHERE setting_name = 'theme'", (theme,))
+            conn.execute("INSERT OR REPLACE INTO site_settings (setting_name, setting_value) VALUES (?, ?)", ('max_upload_size', str(max_upload_size)))
             conn.commit()
             flash('Settings updated successfully', 'success')
         except sqlite3.Error as e:
