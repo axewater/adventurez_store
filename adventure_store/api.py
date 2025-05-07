@@ -147,10 +147,11 @@ def submit_adventure():
                 if 'game_data.json' in zip_ref.namelist():
                     with zip_ref.open('game_data.json') as game_data_file:
                         game_data = json.load(game_data_file)
+                        game_info = game_data.get('game_info', {})
                         # Game's own version (e.g., "2.0.0")
-                        game_version = game_data.get('version', '1.0.0')
+                        game_version = game_info.get('version', '1.0.0')
                         # Engine/Builder version (e.g., "1.1.0")
-                        version_compat = game_data.get('builder_version', 'Unknown')
+                        version_compat = game_info.get('builder_version', 'Unknown')
                 else:
                     # If game_data.json is missing, reject the submission? Or allow "Unknown"?
                     # Let's reject for now to enforce structure.

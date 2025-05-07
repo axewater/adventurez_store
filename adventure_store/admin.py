@@ -461,9 +461,10 @@ def admin_edit_adventure(adventure_id):
                         if 'game_data.json' in zip_ref.namelist():
                             with zip_ref.open('game_data.json') as game_data_file:
                                 game_data = json.load(game_data_file)
+                                game_info = game_data.get('game_info', {})
                                 # Prioritize new zip, fallback to form input
-                                new_game_version = game_data.get('version', game_version)
-                                new_version_compat = game_data.get('builder_version', version_compat)
+                                new_game_version = game_info.get('version', game_version)
+                                new_version_compat = game_info.get('builder_version', version_compat)
                         else:  # If new zip has no game_data.json, keep versions from form
                             flash("Warning: New ZIP file does not contain 'game_data.json'. Versions from form used.", "warning")
                 except Exception as e:

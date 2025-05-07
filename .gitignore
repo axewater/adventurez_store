@@ -4,3 +4,5 @@ venv/
 __pycache__/
 nohup.out
 adventure_store.db
+static/uploads/
+static/uploads/*
