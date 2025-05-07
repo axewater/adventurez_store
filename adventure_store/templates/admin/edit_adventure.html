@@ -1,0 +1,188 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Adventure: {{ adventure.name }} - Admin Panel{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        display: flex;
+    }
+    
+    .admin-sidebar {
+        width: 250px;
+        min-height: calc(100vh - 200px); /* Adjust based on your footer/header height */
+    }
+    
+    .admin-content {
+        flex: 1;
+        padding-left: 30px;
+    }
+    
+    @media (max-width: 992px) {
+        .admin-container {
+            flex-direction: column;
+        }
+        
+        .admin-sidebar {
+            width: 100%;
+            min-height: auto;
+            margin-bottom: 30px;
+        }
+        
+        .admin-content {
+            padding-left: 0;
+        }
+    }
+    .tag-columns {
+        column-count: 3; /* Adjust number of columns as needed */
+        column-gap: 20px;
+    }
+    .tag-columns .form-check {
+        break-inside: avoid-column; /* Prevents checkboxes from breaking across columns */
+        margin-bottom: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <h1 class="mb-4">Edit Adventure: {{ adventure.name }}</h1>
+
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="glass-panel">
+                <h5 class="mb-3">Admin Menu</h5>
+                <ul class="list-group">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </a>
+                    <a href="{{ url_for('admin.admin_manage_adventures') }}" class="list-group-item list-group-item-action active"> <!-- Mark as active if on this page or related -->
+                        <i class="fas fa-book-open me-2"></i>Manage Adventures
+                    </a>
+                    <a href="{{ url_for('admin.admin_api_keys') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-key me-2"></i>API Keys
+                    </a>
+                    <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </a>
+                    <a href="{{ url_for('admin.admin_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </a>
+                    <a href="{{ url_for('moderate.moderate_list') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-tasks me-2"></i>Moderation
+                        {% if pending_moderation_count > 0 %}
+                            <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
+                        {% endif %}
+                    </a>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-content">
+            <div class="glass-panel">
+                <h3 class="mb-4">Editing: {{ adventure.name }}</h3>
+                <form method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Adventure Name</label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ adventure.name }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="5" required>{{ adventure.description }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags (select at least one)</label>
+                        <div class="tag-columns">
+                            {% for tag in all_tags %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.id }}" id="tag-{{ tag.id }}"
+                                           {% if tag.id in current_tag_ids %}checked{% endif %}>
+                                    <label class="form-check-label" for="tag-{{ tag.id }}">{{ tag.name }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="game_version" class="form-label">Game Version</label>
+                        <input type="text" class="form-control" id="game_version" name="game_version" value="{{ adventure.game_version }}" required>
+                        <div class="form-text">The specific version of this game (e.g., 1.0.0, 2.1).</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="version_compat" class="form-label">Engine Compatibility</label>
+                        <input type="text" class="form-control" id="version_compat" name="version_compat" value="{{ adventure.version_compat }}" required>
+                        <div class="form-text">The game engine/builder version this adventure is compatible with (e.g., Builder v1.2).</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Approval Status</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="approved" id="approved_yes" value="1" {% if adventure.approved == 1 %}checked{% endif %}>
+                            <label class="form-check-label" for="approved_yes">
+                                Approved
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="approved" id="approved_no" value="0" {% if adventure.approved == 0 %}checked{% endif %}>
+                            <label class="form-check-label" for="approved_no">
+                                Pending / Not Approved
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="adventure_file" class="form-label">Replace Adventure File (ZIP only, max {{ settings.max_upload_size|default(50) }}MB)</label>
+                        <input type="file" class="form-control" id="adventure_file" name="adventure_file" accept=".zip">
+                        <div class="form-text">
+                            Current file: <a href="{{ url_for('main.download_adventure', adventure_id=adventure.id) }}" target="_blank">{{ adventure.file_path|basename }}</a> ({{ (adventure.file_size / 1024)|int }} KB).
+                            Only upload a new file if you want to replace the existing one. If a new file is uploaded, its `game_data.json` will be checked for version compatibility.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.admin_manage_adventures') }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn-3d btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // File upload validation (optional, can enhance later if needed for edit page)
+    const adventureFileInput = document.getElementById('adventure-file');
+    if (adventureFileInput) {
+        adventureFileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const maxMb = parseInt("{{ settings.max_upload_size|default(50) }}");
+                const maxSize = maxMb * 1024 * 1024;
+
+                if (!file.name.toLowerCase().endsWith('.zip')) {
+                    alert('Please upload a ZIP file only.');
+                    this.value = ''; // Clear the input
+                    return;
+                }
+                if (file.size > maxSize) {
+                    alert(`File size exceeds ${maxMb}MB limit.`);
+                    this.value = ''; // Clear the input
+                    return;
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

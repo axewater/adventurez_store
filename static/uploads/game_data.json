@@ -1,0 +1,457 @@
+{
+  "game_info": {
+    "id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+    "name": "Het Verlaten Kasteel",
+    "created_at": "2025-05-03T18:21:37.514371Z",
+    "updated_at": "2025-05-06T10:20:49.682650Z",
+    "start_image_path": "het verlaten kasteel_start.jpg",
+    "description": "Een oud, vergeten kasteel doemt op uit de mist. Durf jij de poorten te betreden en de geheimen binnenin te ontrafelen?\nGeruchten over een verborgen schat en een rusteloze geest gaan rond...",
+    "win_image_path": "het verlaten kasteel_win.jpg",
+    "loss_image_path": "het verlaten kasteel_verloren.jpg",
+    "version": "2.0.0",
+    "builder_version": "1.1.0"
+  },
+  "rooms": [
+    {
+      "id": "c4b06cdc-ceb6-424c-8c84-f7f12371a8df",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Kasteelpoort",
+      "description": "Je staat voor de krakende, half openstaande poort van een oud kasteel. Onkruid woekert over de ophaalbrug. De binnenplaats ligt voor je in het noorden.",
+      "pos_x": 150,
+      "pos_y": 300,
+      "sort_index": 0,
+      "image_path": "kasteelpoort.png"
+    },
+    {
+      "id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Binnenplaats",
+      "description": "Een overwoekerde binnenplaats. Mos bedekt de oude stenen. In het noorden zie je de hoofdingang naar de Grote Hal. In het westen is een deur naar wat een wachttoren lijkt. Een verweerd stenen standbeeld staat in het midden.",
+      "pos_x": 150,
+      "pos_y": 200,
+      "sort_index": 1,
+      "image_path": "binnenplaats.png"
+    },
+    {
+      "id": "7e650714-5372-4f4d-8aee-9402d80cc907",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Wachttoren Basis",
+      "description": "De onderste verdieping van een ronde wachttoren. Het ruikt muf. Een smalle, stenen trap leidt omhoog.",
+      "pos_x": 50,
+      "pos_y": 200,
+      "sort_index": 2,
+      "image_path": "wachttoren basis.png"
+    },
+    {
+      "id": "1e6fc885-f5c0-4bb2-b4b3-43b5932c81d9",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Torenkamer",
+      "description": "Een kleine kamer bovenin de wachttoren. Door een smal raam kijk je uit over de binnenplaats. Er ligt een oud boek op een stenen richel.",
+      "pos_x": 50,
+      "pos_y": 150,
+      "sort_index": 3,
+      "image_path": "torenkamer.png"
+    },
+    {
+      "id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Grote Hal",
+      "description": "Een imposante hal met hoge plafonds en gescheurde wandtapijten. Een kille tocht waait vanuit het oosten. Er staat een oude kist in de hoek. In het westen is een zware, eikenhouten deur.",
+      "pos_x": 140,
+      "pos_y": 57,
+      "sort_index": 4,
+      "image_path": "grote hal.png"
+    },
+    {
+      "id": "21414a02-ce5d-4e1e-8413-e829366a9039",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Donkere Opslag",
+      "description": "Het is hier donker en stoffig. Planken langs de muur zijn leeg, op een enkele roestige sleutel na. Er hangt een vreemde geur.",
+      "pos_x": 347,
+      "pos_y": 97,
+      "sort_index": 5,
+      "image_path": "donkere opslag.png"
+    },
+    {
+      "id": "792a9fcc-207f-4cba-b5e6-5ef7cfdd95f2",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "title": "Stoffige Bibliotheek",
+      "description": "Boekenkasten vol beschimmelde boeken staan langs de muren. Spinnenwebben hangen overal. Een geest zweeft midden in de kamer! In een hoek staat een glimmende schatkist.",
+      "pos_x": -11,
+      "pos_y": 92,
+      "sort_index": 6,
+      "image_path": "stoffige bibliotheek.png"
+    }
+  ],
+  "entities": [
+    {
+      "id": "dfff7020-2f17-48ed-b517-7e0e1a9383df",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Oude Kist",
+      "description": "Een zware, houten kist met ijzeren banden.",
+      "is_takable": true,
+      "is_container": true,
+      "conversation_id": null,
+      "image_path": "oude kist.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "67a94408-72ab-401e-a5ec-3cf941fcb557",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Gescheurd Wandtapijt",
+      "description": "Een ooit prachtig wandtapijt, nu vol gaten en stof.",
+      "is_takable": false,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": "gescheurd wandtapijt.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "e2ca9a59-81b2-4101-9c07-f1722c058023",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": null,
+      "container_id": "dfff7020-2f17-48ed-b517-7e0e1a9383df",
+      "type": "ITEM",
+      "name": "Gouden Munt",
+      "description": "Een glimmende gouden munt.",
+      "is_takable": true,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": null,
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "701796dd-13c5-4cf0-ab0f-84830c3897cb",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "21414a02-ce5d-4e1e-8413-e829366a9039",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Roestige Sleutel",
+      "description": "Een oude, roestige sleutel. Past deze op de deur naar de bibliotheek?",
+      "is_takable": true,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": "roestige sleutel.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "bb2af8af-b767-44bc-8370-98f06b5f29e4",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "1e6fc885-f5c0-4bb2-b4b3-43b5932c81d9",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Oud Boek",
+      "description": "Een zwaar, in leer gebonden boek. De titel is vervaagd. Misschien staat er een hint in?",
+      "is_takable": true,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": "oud boek.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "c45e9720-297b-4e63-8807-0f77a17c6057",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Stenen Standbeeld",
+      "description": "Een verweerd stenen standbeeld van een ridder. Het lijkt je aan te staren.",
+      "is_takable": false,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": "stenen standbeeld.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "d83c7803-accd-451a-9d9b-229ced59bf47",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "792a9fcc-207f-4cba-b5e6-5ef7cfdd95f2",
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Schatkist",
+      "description": "Een prachtige, met juwelen ingelegde kist. Hij zit stevig op slot.",
+      "is_takable": false,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": "schatkist.png",
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "baf792cc-ca60-4f8f-bcb0-3e772f0b81f5",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": null,
+      "container_id": null,
+      "type": "ITEM",
+      "name": "Schatkistsleutel",
+      "description": "Een sierlijke, gouden sleutel. Deze moet op de schatkist passen!",
+      "is_takable": true,
+      "is_container": false,
+      "conversation_id": null,
+      "image_path": null,
+      "is_mobile": false,
+      "pickup_message": null
+    },
+    {
+      "id": "76ec3dc6-2ba7-4caa-805c-bb990b81cd24",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "room_id": "792a9fcc-207f-4cba-b5e6-5ef7cfdd95f2",
+      "container_id": null,
+      "type": "NPC",
+      "name": "Geest van de Kasteelheer",
+      "description": "Een doorschijnende figuur zweeft voor je, gekleed in ouderwetse kledij. Hij kijkt je treurig aan.",
+      "is_takable": false,
+      "is_container": false,
+      "conversation_id": "5af3179a-8f0f-4579-b8a4-bf20f56ed213",
+      "image_path": "geest van de kasteelheer.png",
+      "is_mobile": false,
+      "pickup_message": null
+    }
+  ],
+  "connections": [
+    {
+      "id": "005d3bf3-4afe-4b00-8888-226706c049d9",
+      "from_room_id": "c4b06cdc-ceb6-424c-8c84-f7f12371a8df",
+      "to_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "direction": "noord",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "40057b05-ef3f-4eed-a2be-d28445f40334",
+      "from_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "to_room_id": "c4b06cdc-ceb6-424c-8c84-f7f12371a8df",
+      "direction": "zuid",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "0a1e4ef3-2af7-4b73-bd0f-c9912987fa66",
+      "from_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "to_room_id": "7e650714-5372-4f4d-8aee-9402d80cc907",
+      "direction": "west",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "914673d5-3f93-4b1f-86d6-b947646ee255",
+      "from_room_id": "7e650714-5372-4f4d-8aee-9402d80cc907",
+      "to_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "direction": "oost",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "2293996f-d9e7-4f28-8052-318bf3b9d3dd",
+      "from_room_id": "7e650714-5372-4f4d-8aee-9402d80cc907",
+      "to_room_id": "1e6fc885-f5c0-4bb2-b4b3-43b5932c81d9",
+      "direction": "omhoog",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "fc96c00d-7d8f-41d0-8cd7-76bffd76e935",
+      "from_room_id": "1e6fc885-f5c0-4bb2-b4b3-43b5932c81d9",
+      "to_room_id": "7e650714-5372-4f4d-8aee-9402d80cc907",
+      "direction": "omlaag",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "e614bdc2-57eb-44dc-8794-0031d9d75aa4",
+      "from_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "to_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "direction": "noord",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "63e6f20f-5f19-4570-afea-69ff2a75d71f",
+      "from_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "to_room_id": "978f5f6d-9419-4434-b704-a6988e3ff457",
+      "direction": "zuid",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "d051aefd-1a0c-4d7e-b82c-2897c8affbdd",
+      "from_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "to_room_id": "21414a02-ce5d-4e1e-8413-e829366a9039",
+      "direction": "oost",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "0c2ee9b0-a6ef-4bfb-84d4-d6024e406e51",
+      "from_room_id": "21414a02-ce5d-4e1e-8413-e829366a9039",
+      "to_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "direction": "west",
+      "is_locked": false,
+      "required_key_id": null
+    },
+    {
+      "id": "f7ab4dbf-077e-4a23-a3a7-68536c3ad35c",
+      "from_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "to_room_id": "792a9fcc-207f-4cba-b5e6-5ef7cfdd95f2",
+      "direction": "west",
+      "is_locked": true,
+      "required_key_id": "701796dd-13c5-4cf0-ab0f-84830c3897cb"
+    },
+    {
+      "id": "5a3d9a77-bbb1-4cc8-8167-9d2373e19feb",
+      "from_room_id": "792a9fcc-207f-4cba-b5e6-5ef7cfdd95f2",
+      "to_room_id": "63f60b72-6f42-417c-9c4e-c57765c6dc9f",
+      "direction": "oost",
+      "is_locked": false,
+      "required_key_id": null
+    }
+  ],
+  "scripts": [
+    {
+      "id": "e3e6d524-08f9-46c9-8870-e5bdc81a5ca3",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_COMMAND(gebruik roestige sleutel)",
+      "condition": "HAS_ITEM(Roestige Sleutel)",
+      "action": "SHOW_MESSAGE(\"Waar wil je de roestige sleutel op gebruiken?\")"
+    },
+    {
+      "id": "58ce52e2-e510-4c7c-ba54-6725845b2393",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_TAKE(Roestige Sleutel)",
+      "condition": null,
+      "action": "ADD_SCORE(10)"
+    },
+    {
+      "id": "cfb1d26d-5410-40ac-8ba5-a1a3a4181195",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_COMMAND(lees boek)",
+      "condition": "HAS_ITEM(Oud Boek)",
+      "action": "SHOW_MESSAGE(\"Je opent het stoffige boek. Tussen de pagina's vind je een los briefje met daarop \u00e9\u00e9n woord: 'fortuna'. Verder lees je: 'De heer van het kasteel waart nog rond in zijn favoriete kamer, de plaats van kennis. Alleen het woord van geluk kan zijn ziel kalmeren en de weg naar de schat onthullen.'\")\nADD_SCORE(5)"
+    },
+    {
+      "id": "42022bc5-685f-46fc-b697-b396387348e3",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_COMMAND(gebruik roestige sleutel op west)",
+      "condition": "CURRENT_ROOM(\"Grote Hal\")\nHAS_ITEM(Roestige Sleutel)",
+      "action": "SHOW_MESSAGE(\"Je hoort een klik. De deur naar het westen is nu open.\")\nSET_STATE(unlocked_west,True)\nADD_SCORE(15)"
+    },
+    {
+      "id": "aeffb294-291e-4c33-a73c-bd21a0723ea4",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_COMMAND(gebruik schatkistsleutel op schatkist)",
+      "condition": "CURRENT_ROOM(\"Stoffige Bibliotheek\")\nHAS_ITEM(Schatkistsleutel)",
+      "action": "SHOW_MESSAGE(\"Met een zachte klik springt het slot van de schatkist open! Je hebt de schat gevonden en het avontuur voltooid!\")\nSET_STATE(game_won,True)\nADD_SCORE(100)"
+    },
+    {
+      "id": "26852301-71f6-4f4c-8692-ac339accc97f",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "trigger": "ON_COMMAND(open schatkist)",
+      "condition": "CURRENT_ROOM(\"Stoffige Bibliotheek\")",
+      "action": "SHOW_MESSAGE(\"De schatkist zit stevig op slot.\")"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "5af3179a-8f0f-4579-b8a4-bf20f56ed213",
+      "game_id": "1e4294ab-9052-49f3-8464-2745d0180e6a",
+      "name": "Geest Kasteelheer Gesprek",
+      "structure": {
+        "nodes": {
+          "boek_hint": {
+            "npc_text": "Mijn studieboek... ik liet het achter in de torenkamer, waar ik vaak naar de sterren keek.",
+            "options": [
+              {
+                "next_node": "einde_neutraal",
+                "text": "Dank u."
+              }
+            ]
+          },
+          "einde_hint": {
+            "npc_text": "Vind de sleutel... en misschien vind je rust. Ga nu.",
+            "options": []
+          },
+          "einde_neutraal": {
+            "npc_text": "Ga nu... laat een oude geest met rust.",
+            "options": []
+          },
+          "geeft_sleutel": {
+            "action": "GIVE_ITEM(Schatkistsleutel)",
+            "npc_text": "De geest lost langzaam op, een zucht van verlichting ontsnapt. Op de plek waar hij zweefde, ligt nu een sierlijke sleutel. Je pakt de schatkistsleutel en stopt hem in je zak.",
+            "options": []
+          },
+          "groet": {
+            "npc_text": "Wie... wie durft mijn rust te verstoren?",
+            "options": [
+              {
+                "next_node": "reiziger",
+                "text": "Ik ben een verdwaalde reiziger."
+              },
+              {
+                "next_node": "wachtwoord_poging",
+                "text": "Ik zoek de schat van het kasteel."
+              },
+              {
+                "next_node": "hulp_vraag",
+                "text": "Ik wil u helpen rust te vinden."
+              }
+            ]
+          },
+          "hulp_vraag": {
+            "npc_text": "Rust... ja, dat zoek ik. Maar mijn geest is gekweld. Er is een woord, een herinnering aan betere tijden, dat me misschien kan helpen. Het staat geschreven in mijn oude studieboek.",
+            "options": [
+              {
+                "next_node": "boek_hint",
+                "text": "Waar is dat boek?"
+              },
+              {
+                "next_node": "einde_neutraal",
+                "text": "Ik zal het zoeken."
+              }
+            ]
+          },
+          "reiziger": {
+            "npc_text": "Een reiziger... Het is lang geleden dat hier levenden waren. Wees voorzichtig, dit kasteel is niet meer wat het was.",
+            "options": [
+              {
+                "next_node": "einde_neutraal",
+                "text": "Dank u."
+              }
+            ]
+          },
+          "sleutel_hint": {
+            "npc_text": "Zoek waar het altijd donker is... waar de voorraden ooit lagen opgeslagen.",
+            "options": [
+              {
+                "next_node": "einde_hint",
+                "text": "Ik begrijp het."
+              }
+            ]
+          },
+          "wachtwoord_poging": {
+            "action_on_correct": "ADD_SCORE(25)",
+            "correct_npc_response": "Fortuna... ja, dat is het! Het geluk... Eindelijk... Hier, neem deze sleutel. Hij opent wat ik achterliet.",
+            "expected_answer": "fortuna",
+            "incorrect_npc_response": "Nee... dat is het niet. Mijn ziel blijft onrustig.",
+            "next_node_correct": "geeft_sleutel",
+            "next_node_incorrect": "einde_neutraal",
+            "npc_text": "Zeg het woord...",
+            "type": "question"
+          }
+        },
+        "start_node": "groet"
+      }
+    }
+  ]
+}

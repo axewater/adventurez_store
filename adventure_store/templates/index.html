@@ -49,6 +49,7 @@
                                 <p class="card-text">{{ adventure.description|truncate(100) }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small class="text-muted">By {{ adventure.author }}</small>
+                                    <small class="text-muted">v{{ adventure.game_version }}</small>
                                     <a href="{{ url_for('main.adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
                                 </div>
                             </div>
@@ -81,6 +82,7 @@
                                 <p class="card-text">{{ adventure.description|truncate(100) }}</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small class="text-muted">By {{ adventure.author }}</small>
+                                    <small class="text-muted">v{{ adventure.game_version }}</small>
                                     <a href="{{ url_for('main.adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
                                 </div>
                             </div>

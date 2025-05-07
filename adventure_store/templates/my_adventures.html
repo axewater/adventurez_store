@@ -14,6 +14,7 @@
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
+                            <th>Game Ver.</th>
                             <th>Rating</th>
                             <th>Downloads</th>
                             <th>Created</th>
@@ -31,6 +32,7 @@
                                         <span class="badge bg-warning">Pending</span>
                                     {% endif %}
                                 </td>
+                                <td>{{ adventure.game_version }}</td>
                                 <td>
                                     <div class="rating">
                                         {% for i in range(5) %}

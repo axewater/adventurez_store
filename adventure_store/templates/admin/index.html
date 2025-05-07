@@ -52,6 +52,9 @@
                     <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-users me-2"></i>User Management
                     </a>
+                    <a href="{{ url_for('admin.admin_manage_adventures') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-book-open me-2"></i>Manage Adventures
+                    </a>
                     <a href="{{ url_for('admin.admin_api_keys') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-key me-2"></i>API Keys
                     </a>
@@ -152,6 +155,9 @@
                 <div class="d-flex flex-wrap gap-3">
                     <a href="{{ url_for('admin.admin_users') }}" class="btn-3d">
                         <i class="fas fa-user-plus me-2"></i>Manage Users
+                    </a>
+                    <a href="{{ url_for('admin.admin_manage_adventures') }}" class="btn-3d">
+                        <i class="fas fa-book-open me-2"></i>Manage Adventures
                     </a>
                     <a href="{{ url_for('admin.admin_api_keys') }}" class="btn-3d">
                         <i class="fas fa-key me-2"></i>Manage API Keys

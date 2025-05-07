@@ -4,9 +4,13 @@ from flask import (
 from .db import get_db
 from .utils import parse_datetime, log_statistic, hash_password, get_site_settings
 from .decorators import admin_required
-import secrets # For generating API keys
+import secrets  # For generating API keys
 import datetime
 import sqlite3
+import os
+import zipfile
+import json
+from werkzeug.utils import secure_filename
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -62,7 +66,7 @@ def admin_add_user():
         hashed_password = hash_password(password)
         conn.execute('INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)', (username, email, hashed_password, role))
         conn.commit()
-        log_statistic('registrations') # Log admin-added user
+        log_statistic('registrations')  # Log admin-added user
         flash(f'User "{username}" added successfully', 'success')
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error adding user via admin: {e}")
@@ -180,7 +184,7 @@ def admin_create_api_key():
             flash('Selected user does not exist.', 'error')
             return redirect(url_for('admin.admin_api_keys'))
 
-        new_key = secrets.token_urlsafe(32) # Generate a secure random key
+        new_key = secrets.token_urlsafe(32)  # Generate a secure random key
         conn.execute('INSERT INTO api_keys (key, name, user_id) VALUES (?, ?, ?)', (new_key, name, user_id))
         conn.commit()
         flash(f'API Key "{name}" created successfully.', 'success')
@@ -346,3 +350,203 @@ def admin_stats():
         # Render template with potentially partial data or defaults
 
     return render_template('admin/stats.html', **stats_data)
+
+# --- Adventure Management ---
+
+@admin_bp.route('/manage-adventures')
+@admin_required
+def admin_manage_adventures():
+    conn = get_db()
+    adventures_list = []
+    try:
+        # Fetch all adventures, regardless of approval status, along with author username and rating info
+        adventures_data = conn.execute('''
+            SELECT a.id, a.name, a.description, u.username as author_username, a.author_id,
+                   a.creation_date, a.file_path, a.file_size, a.game_version, a.version_compat, a.downloads,
+                   a.approved, COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(DISTINCT r.id) as rating_count
+            FROM adventures a
+            JOIN users u ON a.author_id = u.id
+            LEFT JOIN ratings r ON a.id = r.adventure_id
+            GROUP BY a.id
+            ORDER BY a.creation_date DESC
+        ''').fetchall()
+
+        for adv_row in adventures_data:
+            adv_dict = dict(adv_row)
+            adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+            adventures_list.append(adv_dict)
+
+    except sqlite3.Error as e:
+        current_app.logger.error(f"Database error fetching adventures for admin management: {e}")
+        flash("Could not load adventures due to a database error.", "danger")
+
+    return render_template('admin/admin_adventures.html', adventures=adventures_list)
+
+
+@admin_bp.route('/adventure/edit/<int:adventure_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_edit_adventure(adventure_id):
+    conn = get_db()
+    adventure = conn.execute('SELECT * FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
+
+    if not adventure:
+        flash('Adventure not found.', 'danger')
+        return redirect(url_for('admin.admin_manage_adventures'))
+
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        new_tag_ids_str = request.form.getlist('tags')  # List of tag IDs as strings
+        game_version = request.form.get('game_version')
+        version_compat = request.form.get('version_compat')
+        approved = request.form.get('approved', type=int)  # 0 or 1
+        file = request.files.get('adventure_file')
+
+        if not name or not description or not game_version or not version_compat or approved not in [0, 1] or not new_tag_ids_str:
+            flash('All fields (Name, Description, Tags, Game Version, Engine Compatibility, Approval) are required.', 'danger')
+            # Re-fetch data for rendering the form again
+            all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
+            current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
+            return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+
+        new_tag_ids = [int(tid) for tid in new_tag_ids_str]
+
+        try:
+            # Handle file update if a new file is provided
+            new_file_path = adventure['file_path']
+            new_file_size = adventure['file_size']
+            new_game_version = game_version  # Use form input by default
+            new_version_compat = version_compat  # Use form input by default
+
+            if file and file.filename:
+                if not file.filename.lower().endswith('.zip'):
+                    flash('Only ZIP files are allowed for adventure file.', 'danger')
+                    # Re-render form
+                    all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
+                    current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
+                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+
+                # File Size Check
+                site_settings = get_site_settings()
+                max_mb = int(site_settings.get('max_upload_size', 50))
+                max_bytes = max_mb * 1024 * 1024
+                file.seek(0, os.SEEK_END)
+                file_size_new_file = file.tell()
+                file.seek(0)
+                if file_size_new_file > max_bytes:
+                    flash(f'New file size ({file_size_new_file // 1024 // 1024}MB) exceeds the maximum allowed size ({max_mb}MB).', 'danger')
+                    all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
+                    current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
+                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+
+                # Delete old file
+                if adventure['file_path'] and os.path.exists(adventure['file_path']):
+                    try:
+                        os.remove(adventure['file_path'])
+                    except OSError as e:
+                        current_app.logger.warning(f"Could not delete old file {adventure['file_path']}: {e}")
+
+                # Save new file
+                author_username = conn.execute('SELECT username FROM users WHERE id = ?', (adventure['author_id'],)).fetchone()['username']
+                timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+                safe_base_filename = secure_filename(f"{author_username}_adminedit_{timestamp}.zip")
+                upload_folder = current_app.config['UPLOAD_FOLDER']
+                new_file_path = os.path.join(upload_folder, safe_base_filename)
+                file.save(new_file_path)
+                new_file_size = file_size_new_file
+
+                # Extract game_version and version_compat from new zip
+                try:
+                    with zipfile.ZipFile(new_file_path, 'r') as zip_ref:
+                        if 'game_data.json' in zip_ref.namelist():
+                            with zip_ref.open('game_data.json') as game_data_file:
+                                game_data = json.load(game_data_file)
+                                # Prioritize new zip, fallback to form input
+                                new_game_version = game_data.get('version', game_version)
+                                new_version_compat = game_data.get('builder_version', version_compat)
+                        else:  # If new zip has no game_data.json, keep versions from form
+                            flash("Warning: New ZIP file does not contain 'game_data.json'. Versions from form used.", "warning")
+                except Exception as e:
+                    current_app.logger.warning(f"Could not extract version from new zip {safe_base_filename}: {e}")
+                    flash(f"Warning: Could not read 'game_data.json' from new ZIP: {e}. Versions from form used.", "warning")
+
+            # Update adventure details
+            conn.execute('''
+                UPDATE adventures 
+                SET name = ?, description = ?, game_version = ?, version_compat = ?, approved = ?, file_path = ?, file_size = ?
+                WHERE id = ?
+            ''', (name, description, new_game_version, new_version_compat, approved, new_file_path, new_file_size, adventure_id))
+
+            # Update tags: remove old, add new
+            conn.execute('DELETE FROM adventure_tags WHERE adventure_id = ?', (adventure_id,))
+            for tag_id in new_tag_ids:
+                conn.execute('INSERT INTO adventure_tags (adventure_id, tag_id) VALUES (?, ?)', (adventure_id, tag_id))
+
+            conn.commit()
+            flash('Adventure updated successfully.', 'success')
+            return redirect(url_for('admin.admin_manage_adventures'))
+
+        except sqlite3.Error as e:
+            conn.rollback()
+            current_app.logger.error(f"Database error editing adventure {adventure_id}: {e}")
+            flash('A database error occurred while updating the adventure.', 'danger')
+        except Exception as e:
+            conn.rollback()
+            current_app.logger.error(f"Error editing adventure {adventure_id}: {e}")
+            flash(f'An unexpected error occurred: {e}', 'danger')
+
+    # GET request
+    all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
+    current_tag_ids_rows = conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()
+    current_tag_ids = [row['tag_id'] for row in current_tag_ids_rows]
+    
+    # Add basename filter to Jinja environment if not already present
+    # This is usually done in create_app, but for simplicity here:
+    current_app.jinja_env.filters['basename'] = os.path.basename
+
+    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+
+
+@admin_bp.route('/adventure/delete/<int:adventure_id>', methods=['POST'])
+@admin_required
+def admin_delete_adventure(adventure_id):
+    conn = get_db()
+    try:
+        adventure = conn.execute('SELECT file_path, name FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
+        if not adventure:
+            flash('Adventure not found.', 'danger')
+            return redirect(url_for('admin.admin_manage_adventures'))
+
+        # Start transaction
+        conn.execute('BEGIN TRANSACTION')
+        conn.execute('DELETE FROM adventure_tags WHERE adventure_id = ?', (adventure_id,))
+        conn.execute('DELETE FROM ratings WHERE adventure_id = ?', (adventure_id,))
+        conn.execute('DELETE FROM reviews WHERE adventure_id = ?', (adventure_id,))
+        conn.execute('DELETE FROM notifications WHERE related_id = ? AND (type = "moderation" OR type = "approval" OR type = "rejection")', (adventure_id,))  # Delete related notifications
+        conn.execute('DELETE FROM adventures WHERE id = ?', (adventure_id,))
+
+        # Delete the file
+        if adventure['file_path'] and os.path.exists(adventure['file_path']):
+            try:
+                os.remove(adventure['file_path'])
+                current_app.logger.info(f"Admin deleted adventure file: {adventure['file_path']}")
+            except OSError as e:
+                current_app.logger.error(f"Error deleting adventure file {adventure['file_path']} by admin: {e}")
+                # Non-critical, proceed with DB deletion but warn admin
+                flash(f"Adventure '{adventure['name']}' database entries deleted, but failed to delete the associated file: {e}", 'warning')
+
+        conn.commit()
+        flash(f"Adventure '{adventure['name']}' and all its associated data deleted successfully.", 'success')
+
+    except sqlite3.Error as e:
+        conn.rollback()
+        current_app.logger.error(f"Database error deleting adventure {adventure_id}: {e}")
+        flash('A database error occurred while deleting the adventure.', 'danger')
+    except Exception as e:
+        conn.rollback()
+        current_app.logger.error(f"Unexpected error deleting adventure {adventure_id}: {e}")
+        flash(f'An unexpected error occurred: {e}', 'danger')
+
+    return redirect(url_for('admin.admin_manage_adventures'))
+
+# --- End Adventure Management ---

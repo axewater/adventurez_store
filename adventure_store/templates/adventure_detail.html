@@ -36,6 +36,7 @@
                     <p><strong>Author:</strong> {{ adventure.author }}</p>
                     <p><strong>Created:</strong> {{ adventure.creation_date.strftime('%B %d, %Y') }}</p>
                     <p><strong>File Size:</strong> {{ (adventure.file_size / 1024)|int }} KB</p>
+                    <p><strong>Game Version:</strong> {{ adventure.game_version }}</p>
                     <p><strong>Compatible Version:</strong> {{ adventure.version_compat }}</p>
                     <p><strong>Downloads:</strong> {{ adventure.downloads }}</p>
                 </div>

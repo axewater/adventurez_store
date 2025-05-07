@@ -37,7 +37,8 @@ CREATE TABLE IF NOT EXISTS adventures (
     creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     file_path TEXT NOT NULL,
     file_size INTEGER NOT NULL,
-    version_compat TEXT NOT NULL,
+    game_version TEXT NOT NULL DEFAULT '1.0.0',
+    version_compat TEXT NOT NULL DEFAULT 'Unknown',
     approved INTEGER DEFAULT 0,
     downloads INTEGER DEFAULT 0,
     FOREIGN KEY (author_id) REFERENCES users (id)
@@ -148,6 +149,26 @@ CREATE TABLE IF NOT EXISTS api_logs (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 ''')
+
+# Schema migration: Attempt to add columns if they don't exist
+try:
+    cursor.execute("ALTER TABLE adventures ADD COLUMN game_version TEXT NOT NULL DEFAULT '1.0.0'")
+    print("Schema migration: Added column 'game_version' to 'adventures' table.")
+except sqlite3.OperationalError as e:
+    if "duplicate column name" in str(e).lower():
+        pass  # Column already exists
+    else:
+        print(f"Warning during schema migration for 'game_version': {e}")
+
+try:
+    cursor.execute("ALTER TABLE adventures ADD COLUMN version_compat TEXT NOT NULL DEFAULT 'Unknown'")
+    print("Schema migration: Added column 'version_compat' to 'adventures' table.")
+except sqlite3.OperationalError as e:
+    if "duplicate column name" in str(e).lower():
+        pass  # Column already exists
+    else:
+        print(f"Warning during schema migration for 'version_compat': {e}")
+
 
 # Insert default admin user
 admin_password = hash_password("Roll14me!")

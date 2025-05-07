@@ -17,7 +17,7 @@ def moderate_list():
     try:
         pending = conn.execute('''
             SELECT a.id, a.name, a.description, u.username as author, a.creation_date,
-                   a.file_size, a.version_compat
+                   a.file_size, a.game_version, a.version_compat
             FROM adventures a JOIN users u ON a.author_id = u.id
             WHERE a.approved = 0 ORDER BY a.creation_date ASC
         ''').fetchall()
@@ -49,7 +49,7 @@ def moderate_adventure(adventure_id):
 
     conn = get_db()
     try:
-        adventure = conn.execute('SELECT id, name, author_id, file_path FROM adventures WHERE id = ? AND approved = 0', (adventure_id,)).fetchone()
+        adventure = conn.execute('SELECT id, name, author_id, file_path, game_version, version_compat FROM adventures WHERE id = ? AND approved = 0', (adventure_id,)).fetchone()
         if not adventure:
             flash('Adventure not found or already moderated.', 'error')
             return redirect(url_for('moderate.moderate_list'))

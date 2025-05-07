@@ -140,29 +140,33 @@ def submit_adventure():
         file.save(file_path)
 
         # Extract version compatibility from game_data.json inside the zip
+        game_version = "1.0.0"
         version_compat = "Unknown"
         try:
             with zipfile.ZipFile(file_path, 'r') as zip_ref:
                 if 'game_data.json' in zip_ref.namelist():
                     with zip_ref.open('game_data.json') as game_data_file:
                         game_data = json.load(game_data_file)
-                        version_compat = game_data.get('version', 'Unknown')
+                        # Game's own version (e.g., "2.0.0")
+                        game_version = game_data.get('version', '1.0.0')
+                        # Engine/Builder version (e.g., "1.1.0")
+                        version_compat = game_data.get('builder_version', 'Unknown')
                 else:
                     # If game_data.json is missing, reject the submission? Or allow "Unknown"?
                     # Let's reject for now to enforce structure.
                     os.remove(file_path) # Clean up saved file
                     log_api_request(api_key_name, request.path, 400, False)
                     return jsonify({"error": "Missing 'game_data.json' inside the ZIP file."}), 400
-        except (zipfile.BadZipFile, json.JSONDecodeError, Exception) as e:
+        except (zipfile.BadZipFile, json.JSONDecodeError) as e_zip:
             os.remove(file_path) # Clean up saved file
-            current_app.logger.warning(f"Error processing zip file {safe_base_filename}: {e}")
+            current_app.logger.warning(f"Error processing zip file {safe_base_filename}: {e_zip}")
             log_api_request(api_key_name, request.path, 400, False)
-            return jsonify({"error": f"Could not process ZIP file or game_data.json: {e}"}), 400
+            return jsonify({"error": f"Could not process ZIP file or game_data.json: {e_zip}"}), 400
 
         # --- Database Insertion ---
         cursor = conn.execute(
-            'INSERT INTO adventures (name, description, author_id, file_path, file_size, version_compat, approved) VALUES (?, ?, ?, ?, ?, ?, 0)',
-            (name, description, user_id, file_path, file_size, version_compat)
+            'INSERT INTO adventures (name, description, author_id, file_path, file_size, game_version, version_compat, approved) VALUES (?, ?, ?, ?, ?, ?, ?, 0)',
+            (name, description, user_id, file_path, file_size, game_version, version_compat)
         )
         adventure_id = cursor.lastrowid
 

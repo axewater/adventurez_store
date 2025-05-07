@@ -26,7 +26,8 @@
                             <th>Author</th>
                             <th>Description</th>
                             <th>File Size</th>
-                            <th>Version</th>
+                            <th>Game Ver.</th>
+                            <th>Engine Ver.</th>
                             <th>Created</th>
                             <th>Actions</th>
                         </tr>
@@ -38,6 +39,7 @@
                                 <td>{{ adventure.author }}</td>
                                 <td>{{ adventure.description|truncate(100) }}</td>
                                 <td>{{ (adventure.file_size / 1024)|int }} KB</td>
+                                <td>{{ adventure.game_version }}</td>
                                 <td>{{ adventure.version_compat }}</td>
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
