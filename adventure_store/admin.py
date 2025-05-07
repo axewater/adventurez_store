@@ -412,6 +412,7 @@ def admin_edit_adventure(adventure_id):
         new_tag_ids = [int(tid) for tid in new_tag_ids_str]
 
         try:
+            conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
             # Handle file update if a new file is provided
             new_file_path = adventure['file_path']
             new_file_size = adventure['file_size']
@@ -490,11 +491,11 @@ def admin_edit_adventure(adventure_id):
         except sqlite3.Error as e:
             conn.rollback()
             current_app.logger.error(f"Database error editing adventure {adventure_id}: {e}")
-            flash('A database error occurred while updating the adventure.', 'danger')
+            flash('A database error occurred while updating the adventure.', 'danger') # type: ignore
         except Exception as e:
             conn.rollback()
             current_app.logger.error(f"Error editing adventure {adventure_id}: {e}")
-            flash(f'An unexpected error occurred: {e}', 'danger')
+            flash(f'An unexpected error occurred: {e}', 'danger') # type: ignore
 
     # GET request
     all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
@@ -513,13 +514,12 @@ def admin_edit_adventure(adventure_id):
 def admin_delete_adventure(adventure_id):
     conn = get_db()
     try:
+        conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
         adventure = conn.execute('SELECT file_path, name FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
         if not adventure:
             flash('Adventure not found.', 'danger')
             return redirect(url_for('admin.admin_manage_adventures'))
 
-        # Start transaction
-        conn.execute('BEGIN TRANSACTION')
         conn.execute('DELETE FROM adventure_tags WHERE adventure_id = ?', (adventure_id,))
         conn.execute('DELETE FROM ratings WHERE adventure_id = ?', (adventure_id,))
         conn.execute('DELETE FROM reviews WHERE adventure_id = ?', (adventure_id,))
@@ -542,11 +542,11 @@ def admin_delete_adventure(adventure_id):
     except sqlite3.Error as e:
         conn.rollback()
         current_app.logger.error(f"Database error deleting adventure {adventure_id}: {e}")
-        flash('A database error occurred while deleting the adventure.', 'danger')
+        flash('A database error occurred while deleting the adventure.', 'danger') # type: ignore
     except Exception as e:
         conn.rollback()
         current_app.logger.error(f"Unexpected error deleting adventure {adventure_id}: {e}")
-        flash(f'An unexpected error occurred: {e}', 'danger')
+        flash(f'An unexpected error occurred: {e}', 'danger') # type: ignore
 
     return redirect(url_for('admin.admin_manage_adventures'))
 

@@ -49,6 +49,7 @@ def moderate_adventure(adventure_id):
 
     conn = get_db()
     try:
+        conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
         adventure = conn.execute('SELECT id, name, author_id, file_path, game_version, version_compat FROM adventures WHERE id = ? AND approved = 0', (adventure_id,)).fetchone()
         if not adventure:
             flash('Adventure not found or already moderated.', 'error')
@@ -90,11 +91,11 @@ def moderate_adventure(adventure_id):
 
     except sqlite3.Error as e:
         conn.rollback() # Rollback changes on DB error
-        current_app.logger.error(f"Database error moderating adventure (ID: {adventure_id}): {e}")
+        current_app.logger.error(f"Database error moderating adventure (ID: {adventure_id}): {e}", exc_info=True)
         flash('A database error occurred during moderation.', 'error')
     except Exception as e:
         conn.rollback() # Rollback changes on unexpected error
-        current_app.logger.error(f"Unexpected error moderating adventure (ID: {adventure_id}): {e}")
+        current_app.logger.error(f"Unexpected error moderating adventure (ID: {adventure_id}): {e}", exc_info=True)
         flash('An unexpected error occurred during moderation.', 'error')
 
 
