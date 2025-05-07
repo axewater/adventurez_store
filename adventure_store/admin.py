@@ -17,7 +17,7 @@ admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 @admin_bp.route('/')
 @admin_required
 def admin_panel():
-    return render_template('admin/index.html')
+    return render_template('admin/index.html', current_admin_page='dashboard')
 
 @admin_bp.route('/users')
 @admin_required
@@ -35,7 +35,7 @@ def admin_users():
         current_app.logger.error(f"Database error fetching users for admin panel: {e}")
         flash("Could not load users due to a database error.", "error")
 
-    return render_template('admin/users.html', users=processed_users)
+    return render_template('admin/users.html', users=processed_users, current_admin_page='users')
 
 @admin_bp.route('/user/add', methods=['POST'])
 @admin_required
@@ -136,7 +136,7 @@ def admin_settings():
         return redirect(url_for('admin.admin_settings'))
 
     # GET request handled by context processor, just render template
-    return render_template('admin/settings.html')
+    return render_template('admin/settings.html', current_admin_page='settings')
 
 # --- API Key Management ---
 
@@ -164,7 +164,7 @@ def admin_api_keys():
         current_app.logger.error(f"Database error fetching API keys: {e}")
         flash("Could not load API keys due to a database error.", "error")
 
-    return render_template('admin/api_keys.html', api_keys=processed_keys, users=users)
+    return render_template('admin/api_keys.html', api_keys=processed_keys, users=users, current_admin_page='api_keys')
 
 @admin_bp.route('/api-keys/create', methods=['POST'])
 @admin_required
@@ -349,7 +349,7 @@ def admin_stats():
         flash("Could not load statistics due to a database error.", "error")
         # Render template with potentially partial data or defaults
 
-    return render_template('admin/stats.html', **stats_data)
+    return render_template('admin/stats.html', **stats_data, current_admin_page='stats')
 
 # --- Adventure Management ---
 
@@ -380,7 +380,7 @@ def admin_manage_adventures():
         current_app.logger.error(f"Database error fetching adventures for admin management: {e}")
         flash("Could not load adventures due to a database error.", "danger")
 
-    return render_template('admin/admin_adventures.html', adventures=adventures_list)
+    return render_template('admin/admin_adventures.html', adventures=adventures_list, current_admin_page='adventures')
 
 
 @admin_bp.route('/adventure/edit/<int:adventure_id>', methods=['GET', 'POST'])
@@ -407,7 +407,7 @@ def admin_edit_adventure(adventure_id):
             # Re-fetch data for rendering the form again
             all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
             current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
-            return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+            return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings(), current_admin_page='adventures')
 
         new_tag_ids = [int(tid) for tid in new_tag_ids_str]
 
@@ -425,7 +425,7 @@ def admin_edit_adventure(adventure_id):
                     # Re-render form
                     all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
                     current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
-                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings(), current_admin_page='adventures')
 
                 # File Size Check
                 site_settings = get_site_settings()
@@ -438,7 +438,7 @@ def admin_edit_adventure(adventure_id):
                     flash(f'New file size ({file_size_new_file // 1024 // 1024}MB) exceeds the maximum allowed size ({max_mb}MB).', 'danger')
                     all_tags = conn.execute('SELECT id, name FROM tags ORDER BY name').fetchall()
                     current_tag_ids = [row['tag_id'] for row in conn.execute('SELECT tag_id FROM adventure_tags WHERE adventure_id = ?', (adventure_id,)).fetchall()]
-                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+                    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings(), current_admin_page='adventures')
 
                 # Delete old file
                 if adventure['file_path'] and os.path.exists(adventure['file_path']):
@@ -506,7 +506,7 @@ def admin_edit_adventure(adventure_id):
     # This is usually done in create_app, but for simplicity here:
     current_app.jinja_env.filters['basename'] = os.path.basename
 
-    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings())
+    return render_template('admin/edit_adventure.html', adventure=dict(adventure), all_tags=all_tags, current_tag_ids=current_tag_ids, settings=get_site_settings(), current_admin_page='adventures')
 
 
 @admin_bp.route('/adventure/delete/<int:adventure_id>', methods=['POST'])

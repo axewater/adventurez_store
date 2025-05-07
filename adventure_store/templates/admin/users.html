@@ -1,81 +1,10 @@
-{% extends 'base.html' %}
+{% extends 'admin/admin_base.html' %}
 
-{% block title %}User Management - Text Adventure Builder Store{% endblock %}
+{% block admin_title_tag %}User Management{% endblock %}
 
-{% block extra_css %}
-<style>
-    .admin-container {
-        display: flex;
-    }
-    
-    .admin-sidebar {
-        width: 250px;
-        min-height: calc(100vh - 200px);
-    }
-    
-    .admin-content {
-        flex: 1;
-        padding-left: 30px;
-    }
-    
-    @media (max-width: 992px) {
-        .admin-container {
-            flex-direction: column;
-        }
-        
-        .admin-sidebar {
-            width: 100%;
-            min-height: auto;
-            margin-bottom: 30px;
-        }
-        
-        .admin-content {
-            padding-left: 0;
-        }
-    }
-</style>
-{% endblock %}
+{% block admin_page_title %}User Management{% endblock %}
 
-{% block content %}
-<section class="mt-4 fade-in">
-    <h1 class="mb-4">User Management</h1>
-    
-    <div class="admin-container">
-        <!-- Sidebar -->
-        <div class="admin-sidebar">
-            <div class="glass-panel">
-                <h5 class="mb-3">Admin Menu</h5>
-                <ul class="list-group">
-                    <a href="{{ url_for('admin.admin_panel') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action active">
-                        <i class="fas fa-users me-2"></i>User Management
-                    </a>
-                    <a href="{{ url_for('admin.admin_manage_adventures') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-book-open me-2"></i>Manage Adventures
-                    </a>
-                    <a href="{{ url_for('admin.admin_api_keys') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-key me-2"></i>API Keys
-                    </a>
-                    <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-chart-bar me-2"></i>Statistics
-                    </a>
-                    <a href="{{ url_for('admin.admin_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-cog me-2"></i>Settings
-                    </a>
-                    <a href="{{ url_for('moderate.moderate_list') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-tasks me-2"></i>Moderation
-                        {% if pending_moderation_count > 0 %}
-                            <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
-                        {% endif %}
-                    </a>
-                </ul>
-            </div>
-        </div>
-        
-        <!-- Main Content -->
-        <div class="admin-content">
+{% block admin_main_content %}
             <div class="glass-panel">
                 <h3 class="mb-4">Manage Users</h3>
                 
@@ -165,9 +94,6 @@
                     </table>
                 </div>
             </div>
-        </div>
-    </div>
-    
     <!-- Add User Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true" data-bs-backdrop="false">
         <div class="modal-dialog">
@@ -211,6 +137,4 @@
             </div>
         </div>
     </div>
-    
-</section>
 {% endblock %}

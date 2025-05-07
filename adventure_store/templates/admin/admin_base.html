@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}{% block admin_title_tag %}Admin Panel{% endblock %} - Text Adventure Builder Store{% endblock %}
+
+{% block extra_css %}
+    <link href="{{ url_for('static', filename='css/admin_style.css') }}" rel="stylesheet">
+    {% block admin_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<section class="mt-4 fade-in">
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="glass-panel">
+                <h5 class="mb-3">Admin Menu</h5>
+                <ul class="list-group">
+                    <a href="{{ url_for('admin.admin_panel') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'users' %}active{% endif %}">
+                        <i class="fas fa-users me-2"></i>User Management
+                    </a>
+                    <a href="{{ url_for('admin.admin_manage_adventures') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'adventures' %}active{% endif %}">
+                        <i class="fas fa-book-open me-2"></i>Manage Adventures
+                    </a>
+                    <a href="{{ url_for('admin.admin_api_keys') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'api_keys' %}active{% endif %}">
+                        <i class="fas fa-key me-2"></i>API Keys
+                    </a>
+                    <a href="{{ url_for('admin.admin_stats') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'stats' %}active{% endif %}">
+                        <i class="fas fa-chart-bar me-2"></i>Statistics
+                    </a>
+                    <a href="{{ url_for('admin.admin_settings') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'settings' %}active{% endif %}">
+                        <i class="fas fa-cog me-2"></i>Settings
+                    </a>
+                    <a href="{{ url_for('moderate.moderate_list') }}" class="list-group-item list-group-item-action {% if current_admin_page == 'moderation' %}active{% endif %}">
+                        <i class="fas fa-tasks me-2"></i>Moderation
+                        {% if pending_moderation_count > 0 %}
+                            <span class="badge bg-danger float-end">{{ pending_moderation_count }}</span>
+                        {% endif %}
+                    </a>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-content">
+            <h1 class="mb-4">{% block admin_page_title %}{% endblock %}</h1>
+            {% block admin_main_content %}{% endblock %}
+        </main>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+    {% block admin_extra_js %}{% endblock %}
+{% endblock %}
