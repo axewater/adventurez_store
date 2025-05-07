@@ -120,6 +120,8 @@
                                 <td>
                                     {% if adventure.approved == 1 %}
                                         <span class="badge bg-success">Approved</span>
+                                    {% elif adventure.approved == 2 %}
+                                        <span class="badge bg-info">Superseded</span>
                                     {% elif adventure.approved == 0 %}
                                         <span class="badge bg-warning">Pending</span>
                                     {% else %}

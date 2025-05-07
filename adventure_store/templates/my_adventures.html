@@ -26,10 +26,14 @@
                             <tr>
                                 <td>{{ adventure.name }}</td>
                                 <td>
-                                    {% if adventure.approved %}
+                                    {% if adventure.approved == 1 %}
                                         <span class="badge bg-success">Approved</span>
-                                    {% else %}
+                                    {% elif adventure.approved == 2 %}
+                                        <span class="badge bg-info">Superseded</span>
+                                    {% elif adventure.approved == 0 %}
                                         <span class="badge bg-warning">Pending</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unknown</span>
                                     {% endif %}
                                 </td>
                                 <td>{{ adventure.game_version }}</td>
@@ -50,7 +54,7 @@
                                 <td>{{ adventure.downloads }}</td>
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
-                                    {% if adventure.approved %}
+                                    {% if adventure.approved == 1 %}
                                         <a href="{{ url_for('main.adventure_detail', adventure_id=adventure.id) }}" class="btn-3d btn-sm">View</a>
                                     {% else %}
                                         <button class="btn-3d btn-sm" disabled>Pending Review</button>

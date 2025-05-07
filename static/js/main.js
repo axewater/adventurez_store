@@ -26,6 +26,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         s.classList.add('far');
                     }
                 });
+
+                // Enable the submit button
+                const form = this.closest('.rating-form');
+                if (form) {
+                    const submitButton = form.querySelector('button[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                    }
+                }
             });
             
             star.addEventListener('mouseover', function() {

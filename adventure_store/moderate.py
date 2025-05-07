@@ -50,16 +50,29 @@ def moderate_adventure(adventure_id):
     conn = get_db()
     try:
         conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
-        adventure = conn.execute('SELECT id, name, author_id, file_path, game_version, version_compat FROM adventures WHERE id = ? AND approved = 0', (adventure_id,)).fetchone()
-        if not adventure:
+        newly_approved_adventure = conn.execute(
+            'SELECT id, name, author_id, file_path, game_version, version_compat FROM adventures WHERE id = ? AND approved = 0', 
+            (adventure_id,)
+        ).fetchone()
+
+        if not newly_approved_adventure:
             flash('Adventure not found or already moderated.', 'error')
+            conn.rollback()
             return redirect(url_for('moderate.moderate_list'))
 
         if action == 'approve':
-            conn.execute('UPDATE adventures SET approved = 1 WHERE id = ?', (adventure_id,))
+            # 1. Set the new adventure to approved = 1
+            conn.execute('UPDATE adventures SET approved = 1 WHERE id = ?', (newly_approved_adventure['id'],))
+
+            # 2. Supersede older versions by the same author with the same name
+            conn.execute('''
+                UPDATE adventures SET approved = 2 
+                WHERE name = ? AND author_id = ? AND id != ? AND approved = 1
+            ''', (newly_approved_adventure['name'], newly_approved_adventure['author_id'], newly_approved_adventure['id']))
+            
             conn.execute(
                 'INSERT INTO notifications (user_id, content, type, related_id) VALUES (?, ?, ?, ?)',
-                (adventure['author_id'], f"Your adventure '{adventure['name']}' has been approved", 'approval', adventure_id)
+                (newly_approved_adventure['author_id'], f"Your adventure '{newly_approved_adventure['name']}' has been approved", 'approval', adventure_id)
             )
             flash('Adventure approved successfully.', 'success')
         else: # action == 'reject'
@@ -70,19 +83,19 @@ def moderate_adventure(adventure_id):
             # Now delete the adventure itself
             conn.execute('DELETE FROM adventures WHERE id = ?', (adventure_id,))
 
-            # Notify author
+            # Notify author of rejection
             conn.execute(
                 'INSERT INTO notifications (user_id, content, type, related_id) VALUES (?, ?, ?, ?)',
-                (adventure['author_id'], f"Your adventure '{adventure['name']}' has been rejected", 'rejection', None) # No related ID for rejection
+                (newly_approved_adventure['author_id'], f"Your adventure '{newly_approved_adventure['name']}' has been rejected", 'rejection', None)
             )
 
             # Delete the file
             try:
-                if adventure['file_path'] and os.path.exists(adventure['file_path']):
-                    os.remove(adventure['file_path'])
-                    current_app.logger.info(f"Deleted rejected adventure file: {adventure['file_path']}")
+                if newly_approved_adventure['file_path'] and os.path.exists(newly_approved_adventure['file_path']):
+                    os.remove(newly_approved_adventure['file_path'])
+                    current_app.logger.info(f"Deleted rejected adventure file: {newly_approved_adventure['file_path']}")
             except OSError as e:
-                current_app.logger.error(f"Error deleting rejected file {adventure['file_path']}: {e}")
+                current_app.logger.error(f"Error deleting rejected file {newly_approved_adventure['file_path']}: {e}")
                 flash('Adventure rejected, but failed to delete the associated file.', 'warning') # Non-critical error
 
             flash('Adventure rejected and deleted.', 'success')
