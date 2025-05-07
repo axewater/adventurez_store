@@ -183,25 +183,39 @@ def adventure_detail(adventure_id):
 @login_required
 def download_adventure(adventure_id):
     conn = get_db()
-    adventure = None
-    try:
-        adventure = conn.execute('SELECT id, name, file_path FROM adventures WHERE id = ? AND approved = 1', (adventure_id,)).fetchone()
+    adventure = conn.execute('SELECT id, name, file_path, approved FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
 
-        if not adventure:
+    if not adventure:
+        flash('Adventure not found.', 'error')
+        return redirect(request.referrer or url_for('main.adventures'))
+
+    user_role = session.get('role')
+    can_download_pending = adventure['approved'] == 0 and user_role in ['admin', 'moderator']
+    is_approved_public = adventure['approved'] == 1
+
+    if not (is_approved_public or can_download_pending):
+        if adventure['approved'] == 0: # Pending, but user is not moderator/admin
             flash('Adventure not found or not approved', 'error')
-            return redirect(url_for('main.adventures'))
+        elif adventure['approved'] == 2: # Superseded
+            flash('This version of the adventure has been superseded and cannot be downloaded.', 'info')
+        else: # Other statuses or general denial
+            flash('You do not have permission to download this adventure.', 'error')
+        return redirect(request.referrer or url_for('main.adventures'))
 
-        # Update download count
-        conn.execute('UPDATE adventures SET downloads = downloads + 1 WHERE id = ?', (adventure_id,))
-        conn.commit()
-        log_statistic('downloads')
+    # Proceed with download logic
+    try:
+        if is_approved_public:
+            # Update download count only for publicly approved adventures
+            conn.execute('UPDATE adventures SET downloads = downloads + 1 WHERE id = ?', (adventure_id,))
+            conn.commit()
+            log_statistic('downloads')
 
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error downloading adventure (ID: {adventure_id}): {e}")
         flash("Could not process download. Please try again later.", "error")
         return redirect(url_for('main.adventure_detail', adventure_id=adventure_id))
 
-    if adventure and adventure['file_path']:
+    if adventure['file_path']:
         try:
             # Construct absolute path from stored relative path
             # Assuming file_path is stored relative to the UPLOAD_FOLDER config

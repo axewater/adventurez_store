@@ -44,6 +44,9 @@
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
                                     <div class="d-flex gap-2">
+                                        <a href="{{ url_for('main.download_adventure', adventure_id=adventure.id) }}" class="btn-3d btn-info btn-sm" title="Download for Testing">
+                                            <i class="fas fa-download"></i> Test
+                                        </a>
                                         <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post">
                                             <input type="hidden" name="action" value="approve">
                                             <button type="submit" class="btn-3d btn-success btn-sm">Approve</button>
