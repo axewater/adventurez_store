@@ -36,6 +36,7 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
+                                <th>Thumbnail</th>
                                 <th>Name</th>
                                 <th>Author</th>
                                 <th>Status</th>
@@ -49,6 +50,12 @@
                         <tbody>
                             {% for adventure in adventures %}
                             <tr>
+                                <td>
+                                    <img src="{% if adventure.thumbnail_filename %}{{ url_for('static', filename='adventure_thumbnails/' + adventure.thumbnail_filename) }}{% else %}{{ url_for('static', filename='images/default-adventure.png') }}{% endif %}" 
+                                         alt="{{ adventure.name }} thumbnail" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"
+                                         onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default-adventure.png') }}';">
+                                </td>
                                 <td>{{ adventure.name }}</td>
                                 <td>{{ adventure.author_username }}</td>
                                 <td>

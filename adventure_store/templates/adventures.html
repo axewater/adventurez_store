@@ -44,6 +44,11 @@
                 {% for adventure in adventures %}
                     <div class="col-md-4 mb-4">
                         <div class="glass-panel h-100">
+                            {% if adventure.thumbnail_filename %}
+                                <img src="{{ url_for('static', filename='adventure_thumbnails/' + adventure.thumbnail_filename) }}" class="card-img-top" alt="{{ adventure.name }} thumbnail">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/default-adventure.png') }}" class="card-img-top" alt="Default adventure thumbnail">
+                            {% endif %}
                             <div class="card-body">
                                 <h5 class="card-title">{{ adventure.name }}</h5>
                                 <div class="rating mb-2">

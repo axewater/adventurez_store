@@ -363,7 +363,7 @@ def admin_manage_adventures():
         adventures_data = conn.execute('''
             SELECT a.id, a.name, a.description, u.username as author_username, a.author_id,
                    a.creation_date, a.file_path, a.file_size, a.game_version, a.version_compat, a.downloads,
-                   a.approved, COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(DISTINCT r.id) as rating_count
+                   a.thumbnail_filename, a.approved, COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(DISTINCT r.id) as rating_count
             FROM adventures a
             JOIN users u ON a.author_id = u.id
             LEFT JOIN ratings r ON a.id = r.adventure_id
@@ -418,6 +418,7 @@ def admin_edit_adventure(adventure_id):
             new_file_size = adventure['file_size']
             new_game_version = game_version  # Use form input by default
             new_version_compat = version_compat  # Use form input by default
+            new_thumbnail_filename = adventure['thumbnail_filename']  # Keep existing thumbnail
 
             if file and file.filename:
                 if not file.filename.lower().endswith('.zip'):
@@ -475,9 +476,9 @@ def admin_edit_adventure(adventure_id):
             # Update adventure details
             conn.execute('''
                 UPDATE adventures 
-                SET name = ?, description = ?, game_version = ?, version_compat = ?, approved = ?, file_path = ?, file_size = ?
+                SET name = ?, description = ?, game_version = ?, version_compat = ?, approved = ?, file_path = ?, file_size = ?, thumbnail_filename = ?
                 WHERE id = ?
-            ''', (name, description, new_game_version, new_version_compat, approved, new_file_path, new_file_size, adventure_id))
+            ''', (name, description, new_game_version, new_version_compat, approved, new_file_path, new_file_size, new_thumbnail_filename, adventure_id))
 
             # Update tags: remove old, add new
             conn.execute('DELETE FROM adventure_tags WHERE adventure_id = ?', (adventure_id,))
@@ -515,7 +516,7 @@ def admin_delete_adventure(adventure_id):
     conn = get_db()
     try:
         conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
-        adventure = conn.execute('SELECT file_path, name FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
+        adventure = conn.execute('SELECT file_path, name, thumbnail_filename FROM adventures WHERE id = ?', (adventure_id,)).fetchone()
         if not adventure:
             flash('Adventure not found.', 'danger')
             return redirect(url_for('admin.admin_manage_adventures'))
@@ -526,7 +527,7 @@ def admin_delete_adventure(adventure_id):
         conn.execute('DELETE FROM notifications WHERE related_id = ? AND (type = "moderation" OR type = "approval" OR type = "rejection")', (adventure_id,))  # Delete related notifications
         conn.execute('DELETE FROM adventures WHERE id = ?', (adventure_id,))
 
-        # Delete the file
+        # Delete the file and thumbnail
         if adventure['file_path'] and os.path.exists(adventure['file_path']):
             try:
                 os.remove(adventure['file_path'])
@@ -535,6 +536,15 @@ def admin_delete_adventure(adventure_id):
                 current_app.logger.error(f"Error deleting adventure file {adventure['file_path']} by admin: {e}")
                 # Non-critical, proceed with DB deletion but warn admin
                 flash(f"Adventure '{adventure['name']}' database entries deleted, but failed to delete the associated file: {e}", 'warning')
+
+        if adventure['thumbnail_filename'] and os.path.exists(os.path.join(current_app.config['UPLOAD_FOLDER'], 'adventure_thumbnails', adventure['thumbnail_filename'])):
+            try:
+                os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], 'adventure_thumbnails', adventure['thumbnail_filename']))
+                current_app.logger.info(f"Admin deleted adventure thumbnail: {adventure['thumbnail_filename']}")
+            except OSError as e:
+                current_app.logger.error(f"Error deleting adventure thumbnail {adventure['thumbnail_filename']} by admin: {e}")
+                # Non-critical, proceed with DB deletion but warn admin
+                flash(f"Adventure '{adventure['name']}' database entries deleted, but failed to delete the associated thumbnail: {e}", 'warning')
 
         conn.commit()
         flash(f"Adventure '{adventure['name']}' and all its associated data deleted successfully.", 'success')
