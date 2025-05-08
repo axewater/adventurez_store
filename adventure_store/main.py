@@ -22,7 +22,7 @@ def index():
     try:
         # Get featured adventures
         query_common_fields = '''a.id, a.name, a.description, u.username as author, a.creation_date, a.file_size,
-                   a.game_version, a.version_compat, a.downloads, COALESCE(AVG(r.rating), 0) as avg_rating,'''
+                   a.game_version, a.version_compat, a.downloads, a.thumbnail_filename, COALESCE(AVG(r.rating), 0) as avg_rating,'''
         featured = conn.execute(f'''
             SELECT {query_common_fields}
                    COUNT(DISTINCT r.id) as rating_count
@@ -41,7 +41,7 @@ def index():
 
         # Get recent adventures
         recent = conn.execute('''
-            SELECT a.id, a.name, a.description, u.username as author, a.creation_date, a.game_version, a.version_compat
+            SELECT a.id, a.name, a.description, u.username as author, a.creation_date, a.game_version, a.version_compat, a.thumbnail_filename
             FROM adventures a 
             JOIN users u ON a.author_id = u.id
             WHERE a.approved = 1
@@ -84,7 +84,7 @@ def adventures():
     try:
         query = '''
             SELECT a.id, a.name, a.description, u.username as author, a.creation_date, a.file_size, 
-                   a.game_version, a.version_compat, a.downloads, COALESCE(AVG(r.rating), 0) as avg_rating,
+                   a.game_version, a.version_compat, a.downloads, a.thumbnail_filename, COALESCE(AVG(r.rating), 0) as avg_rating,
                    COUNT(DISTINCT r.id) as rating_count
             FROM adventures a
             JOIN users u ON a.author_id = u.id
@@ -142,8 +142,8 @@ def adventure_detail(adventure_id):
     try:
         adventure = conn.execute('''
             SELECT a.id, a.name, a.description, u.username as author, a.author_id, 
-                   a.creation_date, a.file_path, a.file_size, a.game_version, a.version_compat, a.downloads,
-                   COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(DISTINCT r.id) as rating_count
+                   a.creation_date, a.file_path, a.file_size, a.game_version, a.version_compat,
+                   a.downloads, a.thumbnail_filename, COALESCE(AVG(r.rating), 0) as avg_rating, COUNT(DISTINCT r.id) as rating_count
             FROM adventures a
             JOIN users u ON a.author_id = u.id
             LEFT JOIN ratings r ON a.id = r.adventure_id
