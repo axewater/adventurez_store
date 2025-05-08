@@ -3,6 +3,7 @@ from flask import (
 )
 from .db import get_db
 from .utils import parse_datetime
+from packaging.version import parse as parse_version
 from .decorators import moderator_required
 import os
 import sqlite3
@@ -15,16 +16,41 @@ def moderate_list():
     conn = get_db()
     processed_pending = []
     try:
-        pending = conn.execute('''
-            SELECT a.id, a.name, a.description, u.username as author, a.creation_date,
-                   a.file_size, a.game_version, a.version_compat
+        pending_adventures_data = conn.execute('''
+            SELECT a.id, a.name, a.description, u.username as author, a.author_id, a.creation_date,
+                   a.file_size, a.game_version as pending_game_version, a.version_compat
             FROM adventures a JOIN users u ON a.author_id = u.id
             WHERE a.approved = 0 ORDER BY a.creation_date ASC
         ''').fetchall()
 
-        for adventure in pending:
-            adv_dict = dict(adventure)
+        for adventure_row in pending_adventures_data:
+            adv_dict = dict(adventure_row)
             adv_dict['creation_date'] = parse_datetime(adv_dict['creation_date'])
+            adv_dict['game_version'] = adv_dict.pop('pending_game_version') # Rename for clarity in template
+
+            # Check for existing active version by the same author with the same name
+            existing_active_adventure = conn.execute('''
+                SELECT game_version FROM adventures
+                WHERE name = ? AND author_id = ? AND approved = 1
+                ORDER BY id DESC LIMIT 1
+            ''', (adv_dict['name'], adv_dict['author_id'])).fetchone()
+
+            adv_dict['existing_active_game_version'] = None
+            adv_dict['needs_version_warning'] = False
+
+            if existing_active_adventure:
+                adv_dict['existing_active_game_version'] = existing_active_adventure['game_version']
+                try:
+                    pending_v = parse_version(adv_dict['game_version'])
+                    active_v = parse_version(existing_active_adventure['game_version'])
+                    if pending_v <= active_v:
+                        adv_dict['needs_version_warning'] = True
+                except Exception as e:
+                    current_app.logger.warning(
+                        f"Could not parse game versions for warning (pending: {adv_dict['game_version']}, "
+                        f"active: {existing_active_adventure['game_version']}) for adventure ID {adv_dict['id']}: {e}"
+                    )
+
             processed_pending.append(adv_dict)
 
         # Mark relevant notifications as read for the current moderator/admin

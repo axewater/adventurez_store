@@ -26,8 +26,9 @@
                             <th>Author</th>
                             <th>Description</th>
                             <th>File Size</th>
-                            <th>Game Ver.</th>
-                            <th>Engine Ver.</th>
+                            <th>Pending Ver.</th>
+                            <th>Active Ver.</th>
+                            <th>Engine Compat.</th>
                             <th>Created</th>
                             <th>Actions</th>
                         </tr>
@@ -40,6 +41,7 @@
                                 <td>{{ adventure.description|truncate(100) }}</td>
                                 <td>{{ (adventure.file_size / 1024)|int }} KB</td>
                                 <td>{{ adventure.game_version }}</td>
+                                <td>{{ adventure.existing_active_game_version or 'N/A' }}</td>
                                 <td>{{ adventure.version_compat }}</td>
                                 <td>{{ adventure.creation_date.strftime('%b %d, %Y') }}</td>
                                 <td>
@@ -47,9 +49,15 @@
                                         <a href="{{ url_for('main.download_adventure', adventure_id=adventure.id) }}" class="btn-3d btn-info btn-sm" title="Download for Testing">
                                             <i class="fas fa-download"></i> Test
                                         </a>
-                                        <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post">
+                                        <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post" class="approve-form">
                                             <input type="hidden" name="action" value="approve">
-                                            <button type="submit" class="btn-3d btn-success btn-sm">Approve</button>
+                                            <button type="submit" class="btn-3d btn-success btn-sm approve-btn"
+                                                    data-adventure-name="{{ adventure.name }}"
+                                                    data-pending-version="{{ adventure.game_version }}"
+                                                    data-active-version="{{ adventure.existing_active_game_version or '' }}"
+                                                    data-needs-warning="{{ 'true' if adventure.needs_version_warning else 'false' }}">
+                                                Approve
+                                            </button>
                                         </form>
                                         <form action="{{ url_for('moderate.moderate_adventure', adventure_id=adventure.id) }}" method="post">
                                             <input type="hidden" name="action" value="reject">
@@ -70,4 +78,31 @@
         {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const approveForms = document.querySelectorAll('.approve-form');
+
+    approveForms.forEach(form => {
+        form.addEventListener('submit', function(event) {
+            const approveButton = form.querySelector('.approve-btn');
+            const needsWarning = approveButton.dataset.needsWarning === 'true';
+
+            if (needsWarning) {
+                const adventureName = approveButton.dataset.adventureName;
+                const pendingVersion = approveButton.dataset.pendingVersion;
+                const activeVersion = approveButton.dataset.activeVersion;
+
+                const warningMessage = `Warning: You are about to approve '${adventureName}' (version ${pendingVersion}).\nAn active version (${activeVersion}) by the same author already exists.\nApproving this submission will replace the active version.\n\nAre you sure you want to proceed?`;
+
+                if (!confirm(warningMessage)) {
+                    event.preventDefault(); // Stop form submission if user cancels
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}
