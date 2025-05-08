@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS adventures (
     version_compat TEXT NOT NULL DEFAULT 'Unknown',
     approved INTEGER DEFAULT 0,
     downloads INTEGER DEFAULT 0,
+    thumbnail_filename TEXT,
     FOREIGN KEY (author_id) REFERENCES users (id)
 )
 ''')
@@ -168,6 +169,15 @@ except sqlite3.OperationalError as e:
         pass  # Column already exists
     else:
         print(f"Warning during schema migration for 'version_compat': {e}")
+
+try:
+    cursor.execute("ALTER TABLE adventures ADD COLUMN thumbnail_filename TEXT")
+    print("Schema migration: Added column 'thumbnail_filename' to 'adventures' table.")
+except sqlite3.OperationalError as e:
+    if "duplicate column name" in str(e).lower():
+        pass  # Column already exists
+    else:
+        print(f"Warning during schema migration for 'thumbnail_filename': {e}")
 
 
 # Insert default admin user

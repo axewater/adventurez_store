@@ -3,6 +3,9 @@ import datetime
 import sqlite3
 from flask import current_app, session
 from .db import get_db
+import os
+import zipfile
+import json
 
 def hash_password(password):
     """Hashes a password using SHA256."""
@@ -83,3 +86,86 @@ def log_statistic(stat_name, increment=1):
     except sqlite3.Error as e:
         current_app.logger.error(f"Database error logging statistic '{stat_name}': {e}")
     # No conn.close() here
+
+def extract_and_save_thumbnail(zip_file_path, adventure_id):
+    """
+    Extracts a thumbnail image from an adventure ZIP file and saves it.
+
+    Tries to find common thumbnail names first (thumbnail.png, cover.jpg, etc.).
+    If not found, it looks for 'game_info.start_image_path' in 'game_data.json'
+    within the ZIP and uses that image if it exists in the ZIP.
+
+    Args:
+        zip_file_path (str): The path to the adventure ZIP file.
+        adventure_id (int): The ID of the adventure, used for naming the thumbnail.
+
+    Returns:
+        str: The filename of the saved thumbnail if successful, None otherwise.
+    """
+    common_thumbnail_names = [
+        'thumbnail.png', 'thumbnail.jpg', 'thumbnail.jpeg',
+        'cover.png', 'cover.jpg', 'cover.jpeg',
+        'thumb.png', 'thumb.jpg', 'thumb.jpeg'
+    ]
+    image_extensions = ('.png', '.jpg', '.jpeg', '.gif', '.webp') # Common image extensions
+
+    try:
+        with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
+            zip_contents = zip_ref.namelist()
+            image_to_extract = None
+            original_ext = None
+
+            # 1. Check for common thumbnail names
+            for common_name in common_thumbnail_names:
+                # Check for case-insensitive matches
+                for item_in_zip in zip_contents:
+                    if item_in_zip.lower().endswith(common_name.lower()): # Check filename part
+                        # Ensure it's at the root or in a common image folder (optional, for now root is fine)
+                        # For simplicity, we'll assume if the name matches, it's a candidate.
+                        # More robust check: if os.path.basename(item_in_zip).lower() == common_name.lower():
+                        if os.path.basename(item_in_zip).lower() == common_name.lower():
+                            image_to_extract = item_in_zip
+                            break
+                if image_to_extract:
+                    break
+
+            # 2. If not found, check game_data.json for start_image_path
+            if not image_to_extract and 'game_data.json' in zip_contents:
+                try:
+                    with zip_ref.open('game_data.json') as gd_file:
+                        game_data = json.load(gd_file)
+                        start_image_path = game_data.get('game_info', {}).get('start_image_path')
+                        if start_image_path and start_image_path.lower().endswith(image_extensions):
+                            # Ensure the path from game_data.json actually exists in the zip
+                            # It might be a relative path like "images/cover.png"
+                            # We need to handle potential path separators (normalize)
+                            normalized_start_image_path = start_image_path.replace('\\', '/')
+                            if normalized_start_image_path in zip_contents:
+                                image_to_extract = normalized_start_image_path
+                            else: # Try matching just the basename if full path not found
+                                base_start_image = os.path.basename(normalized_start_image_path)
+                                for item_in_zip in zip_contents:
+                                    if os.path.basename(item_in_zip) == base_start_image:
+                                        image_to_extract = item_in_zip
+                                        break
+                except json.JSONDecodeError:
+                    current_app.logger.warning(f"Could not parse game_data.json in {zip_file_path} for thumbnail.")
+                except Exception as e_gd:
+                    current_app.logger.warning(f"Error reading start_image_path from game_data.json in {zip_file_path}: {e_gd}")
+
+            if image_to_extract:
+                original_ext = os.path.splitext(image_to_extract)[1]
+                thumbnail_filename = f"thumb_adv_{adventure_id}{original_ext}"
+                thumbnail_save_path = os.path.join(current_app.config['THUMBNAIL_FOLDER'], thumbnail_filename)
+
+                with zip_ref.open(image_to_extract) as source_image, open(thumbnail_save_path, 'wb') as target_file:
+                    target_file.write(source_image.read())
+                current_app.logger.info(f"Thumbnail '{thumbnail_filename}' extracted and saved for adventure {adventure_id}.")
+                return thumbnail_filename
+
+    except zipfile.BadZipFile:
+        current_app.logger.error(f"Bad ZIP file: {zip_file_path} when trying to extract thumbnail.")
+    except Exception as e:
+        current_app.logger.error(f"Error extracting thumbnail for adventure {adventure_id} from {zip_file_path}: {e}", exc_info=True)
+
+    return None

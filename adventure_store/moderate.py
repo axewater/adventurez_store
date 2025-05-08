@@ -18,7 +18,7 @@ def moderate_list():
     try:
         pending_adventures_data = conn.execute('''
             SELECT a.id, a.name, a.description, u.username as author, a.author_id, a.creation_date,
-                   a.file_size, a.game_version as pending_game_version, a.version_compat
+                   a.file_size, a.game_version as pending_game_version, a.version_compat, a.thumbnail_filename
             FROM adventures a JOIN users u ON a.author_id = u.id
             WHERE a.approved = 0 ORDER BY a.creation_date ASC
         ''').fetchall()
@@ -77,7 +77,7 @@ def moderate_adventure(adventure_id):
     try:
         conn.execute('BEGIN TRANSACTION') # Explicitly start a transaction
         newly_approved_adventure = conn.execute(
-            'SELECT id, name, author_id, file_path, game_version, version_compat FROM adventures WHERE id = ? AND approved = 0', 
+            'SELECT id, name, author_id, file_path, game_version, version_compat, thumbnail_filename FROM adventures WHERE id = ? AND approved = 0', 
             (adventure_id,)
         ).fetchone()
 
@@ -118,11 +118,18 @@ def moderate_adventure(adventure_id):
             # Delete the file
             try:
                 if newly_approved_adventure['file_path'] and os.path.exists(newly_approved_adventure['file_path']):
+                    # Delete adventure zip
                     os.remove(newly_approved_adventure['file_path'])
                     current_app.logger.info(f"Deleted rejected adventure file: {newly_approved_adventure['file_path']}")
+                    # Delete thumbnail
+                    if newly_approved_adventure['thumbnail_filename']:
+                        thumb_path = os.path.join(current_app.config['THUMBNAIL_FOLDER'], newly_approved_adventure['thumbnail_filename'])
+                        if os.path.exists(thumb_path):
+                            os.remove(thumb_path)
+                            current_app.logger.info(f"Deleted thumbnail for rejected adventure: {thumb_path}")
             except OSError as e:
                 current_app.logger.error(f"Error deleting rejected file {newly_approved_adventure['file_path']}: {e}")
-                flash('Adventure rejected, but failed to delete the associated file.', 'warning') # Non-critical error
+                flash('Adventure rejected, but failed to delete the associated file(s).', 'warning') # Non-critical error
 
             flash('Adventure rejected and deleted.', 'success')
 

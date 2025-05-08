@@ -3,7 +3,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from .db import get_db
-from .utils import log_statistic, get_site_settings
+from .utils import log_statistic, get_site_settings, extract_and_save_thumbnail
 import os
 import datetime
 import zipfile
@@ -198,10 +198,11 @@ def submit_adventure():
 
         # --- Database Insertion ---
         cursor = conn.execute(
-            'INSERT INTO adventures (name, description, author_id, file_path, file_size, game_version, version_compat, approved) VALUES (?, ?, ?, ?, ?, ?, ?, 0)',
-            (new_adventure_name, new_description, user_id, file_path, file_size, new_game_version, version_compat)
+            'INSERT INTO adventures (name, description, author_id, file_path, file_size, game_version, version_compat, approved, thumbnail_filename) VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)',
+            (new_adventure_name, new_description, user_id, file_path, file_size, new_game_version, version_compat, None) # Thumbnail initially None
         )
         adventure_id = cursor.lastrowid
+        conn.commit() # Commit early to get adventure_id
 
         # Add tags
         for tag_id in tag_ids:
@@ -213,6 +214,14 @@ def submit_adventure():
             conn.execute(
                 'INSERT INTO notifications (user_id, content, type, related_id) VALUES (?, ?, ?, ?)',
                 (mod['id'], f"New API submission '{new_adventure_name}' needs approval", 'moderation', adventure_id)
+            )
+
+        # Extract and save thumbnail
+        new_thumbnail_filename = extract_and_save_thumbnail(file_path, adventure_id)
+        if new_thumbnail_filename:
+            conn.execute(
+                'UPDATE adventures SET thumbnail_filename = ? WHERE id = ?',
+                (new_thumbnail_filename, adventure_id)
             )
 
         conn.commit()
@@ -282,7 +291,7 @@ def check_title_availability():
         return jsonify({"error": "Missing 'title' query parameter."}), 400
 
     conn = get_db()
-    try:
+    try: 
         # Perform a case-insensitive check for the adventure name
         # The LOWER() function makes the comparison case-insensitive
         # We only care about *active* (approved = 1) or *pending* (approved = 0) versions for availability.

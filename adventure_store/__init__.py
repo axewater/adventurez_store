@@ -16,6 +16,7 @@ def create_app(test_config=None):
         SECRET_KEY=secrets.token_hex(16), # Generate a new key each time if not set
         DATABASE=os.path.join(app.instance_path, 'adventure_store.db'),
         UPLOAD_FOLDER=os.path.join(app.root_path, '..', 'static', 'uploads'), # Relative to app package
+        THUMBNAIL_FOLDER=os.path.join(app.root_path, '..', 'static', 'adventure_thumbnails'),
         MAX_CONTENT_LENGTH=500 * 1024 * 1024,  # 500MB max upload size (Increased significantly)
     )
 
@@ -37,6 +38,12 @@ def create_app(test_config=None):
     # Ensure upload directory exists
     try:
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    except OSError:
+        pass
+
+    # Ensure thumbnail directory exists
+    try:
+        os.makedirs(app.config['THUMBNAIL_FOLDER'], exist_ok=True)
     except OSError:
         pass
 
